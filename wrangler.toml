@@ -1,0 +1,8 @@
+name = "my-next-app"
+compatibility_date = "2026-04-23"
+compatibility_flags = ["nodejs_compat", "no_handle_cross_request_promise_resolution"]
+main = ".open-next/worker.js"
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
