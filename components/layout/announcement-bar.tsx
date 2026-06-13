@@ -17,7 +17,7 @@ export function AnnouncementBar({ text, link, bgColor }: AnnouncementBarProps) {
 
   const content = (
     <div
-      className="relative flex w-full items-center justify-center py-2 pr-10 pl-4 text-sm font-medium text-white sm:text-base"
+      className="relative flex w-full items-center justify-center py-2 pr-10 pl-4 text-xs font-medium text-white sm:text-sm"
       style={{ backgroundColor: bgColor || "#2563eb" }}
     >
       <span className="text-center">{text}</span>
