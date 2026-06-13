@@ -19,13 +19,15 @@ function CategoryArtwork({ category, preferImage = true }: { category: Category;
   if (preferImage) {
     if (category.image) {
       return (
-        <Image
-          src={category.image}
-          alt={category.title}
-          width={220}
-          height={220}
-          className="h-full w-full object-contain drop-shadow-[0_16px_18px_rgba(15,23,42,0.22)] transition-transform duration-300 group-hover:scale-105"
-        />
+        <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full">
+          <Image
+            src={category.image}
+            alt={category.title}
+            width={220}
+            height={220}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
       );
     }
 
@@ -48,15 +50,17 @@ function CategoryArtwork({ category, preferImage = true }: { category: Category;
     );
   }
 
-  if (category.image) {
+    if (category.image) {
     return (
-      <Image
-        src={category.image}
-        alt={category.title}
-        width={220}
-        height={220}
-        className="h-full w-full object-cover"
-      />
+      <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full">
+        <Image
+          src={category.image}
+          alt={category.title}
+          width={220}
+          height={220}
+          className="h-full w-full object-cover"
+        />
+      </div>
     );
   }
 
@@ -77,7 +81,7 @@ function CategoryTile({ category, index }: { category: Category; index: number }
             "absolute inset-[7px] rounded-full bg-[#FAFAFA] shadow-[inset_0_0_0_2px_rgba(17,24,39,0.16),0_8px_18px_rgba(15,23,42,0.08)] transition-transform duration-300 group-hover:scale-[1.03] md:inset-[9px] md:shadow-[inset_0_0_0_3px_rgba(17,24,39,0.16),0_12px_26px_rgba(15,23,42,0.10)]"
           )}
         />
-        <div className="relative z-10 flex h-[76%] w-[76%] items-center justify-center overflow-visible transition-transform duration-300 group-hover:-translate-y-1 md:h-[82%] md:w-[82%]">
+        <div className="relative z-10 flex h-[76%] w-[76%] items-center justify-center overflow-hidden rounded-full transition-transform duration-300 group-hover:-translate-y-1 md:h-[82%] md:w-[82%]">
           <CategoryArtwork category={category} preferImage={true} />
         </div>
       </div>
