@@ -32,6 +32,7 @@ import {
   $getNodeByKey,
   $getRoot,
   $getSelection,
+  $isElementNode,
   $isRangeSelection,
   DecoratorNode,
   DOMConversionMap,
@@ -458,10 +459,33 @@ function HtmlInitializer({ value }: { value: string }) {
         return;
       }
 
-      const parser = new DOMParser();
+            const parser = new DOMParser();
       const dom = parser.parseFromString(value, "text/html");
-      const nodes = $generateNodesFromDOM(editor, dom);
-      root.append(...nodes);
+      const rawNodes = $generateNodesFromDOM(editor, dom);
+
+      // Wrap bare text/linebreak nodes in paragraphs — root only accepts Element/Decorator nodes
+      const safeNodes = [];
+      let pendingInline: typeof rawNodes = [];
+      for (const node of rawNodes) {
+        if ($isElementNode(node) || node instanceof DecoratorNode) {
+          if (pendingInline.length > 0) {
+            const para = $createParagraphNode();
+            para.append(...pendingInline);
+            safeNodes.push(para);
+            pendingInline = [];
+          }
+          safeNodes.push(node);
+        } else {
+          pendingInline.push(node);
+        }
+      }
+      if (pendingInline.length > 0) {
+        const para = $createParagraphNode();
+        para.append(...pendingInline);
+        safeNodes.push(para);
+      }
+
+      root.append(...safeNodes);
     });
   }, [editor, value]);
 

@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import clsx from "clsx";
-import { Camera, ChevronDown, Plus, Star, Upload, X } from "lucide-react";
+import { Camera, ChevronDown, Loader2, Plus, Sparkles, Star, Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -71,11 +71,19 @@ export default function ProductForm({ productId }: { productId?: string }) {
   const [categorySearch, setCategorySearch] = useState("");
   const [categoryOpen, setCategoryOpen] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
-    const [loading, setLoading] = useState(false);
+        const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("simple");
 
-  const [form, setForm] = useState<ProductFormData>({
+    // AI generation state
+  const [aiRawText, setAiRawText] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiProducts, setAiProducts] = useState<{ name: string; description: string; keyFeatures: string[] }[]>([]);
+  const [aiSelectedIndex, setAiSelectedIndex] = useState(0);
+  const [aiProductPickerOpen, setAiProductPickerOpen] = useState(false);
+
+        const [form, setForm] = useState<ProductFormData>({
     name: "",
     slug: "",
     description: "",
@@ -395,7 +403,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
     }));
   };
 
-    const handleSubmit = async () => {
+        const handleSubmit = async () => {
     setSaving(true);
     const payload = buildPayload();
 
@@ -420,6 +428,81 @@ export default function ProductForm({ productId }: { productId?: string }) {
     setSaving(false);
   };
 
+    const handleAiGenerate = async () => {
+    if (!aiRawText.trim()) {
+      toast.error("Please paste some raw text or a WhatsApp message first.");
+      return;
+    }
+    setAiGenerating(true);
+    try {
+      const res = await fetch("/api/generate-product-info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rawText: aiRawText }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "AI generation failed");
+      }
+
+      const products = data.products;
+      if (!Array.isArray(products) || products.length === 0) {
+        toast.error("AI could not extract any product info. Try different text.");
+        return;
+      }
+
+      // Store all products from the response
+      setAiProducts(products);
+
+      // Populate form with the first product
+      const product = products[0];
+      setForm((prev) => ({
+        ...prev,
+                name: product.name || prev.name,
+        description: product.description || prev.description,
+        productHighlights: Array.isArray(product.keyFeatures)
+          ? product.keyFeatures.map((f: string) => "• " + f).join("\n")
+          : prev.productHighlights,
+        slug: generateSlug(product.name || ""),
+        sku: generateSKU(product.name || ""),
+      }));
+      setAiSelectedIndex(0);
+
+      // If multiple products returned, show a picker dialog
+      if (products.length > 1) {
+        setAiProductPickerOpen(true);
+      } else {
+        toast.success("AI generated product details! Review and adjust as needed.");
+      }
+
+      setSlugManuallyEdited(false);
+      setSkuManuallyEdited(false);
+    } catch (error: any) {
+      console.error("[ai-generate]", error);
+      toast.error(error.message || "Failed to generate product info from AI.");
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
+  const applyAiProduct = (index: number) => {
+    const product = aiProducts[index];
+    if (!product) return;
+    setForm((prev) => ({
+      ...prev,
+      name: product.name || prev.name,
+      description: product.description || prev.description,
+      productHighlights: Array.isArray(product.keyFeatures)
+        ? product.keyFeatures.map((f) => "• " + f).join("\n")
+        : prev.productHighlights,
+      slug: generateSlug(product.name || ""),
+      sku: generateSKU(product.name || ""),
+    }));
+    setAiSelectedIndex(index);
+    setSlugManuallyEdited(false);
+    setSkuManuallyEdited(false);
+  };
+
   if (loading) {
     return <div className="py-8 text-center">Loading product...</div>;
   }
@@ -434,8 +517,64 @@ export default function ProductForm({ productId }: { productId?: string }) {
           </TabsList>
         </div>
 
-        <TabsContent value="simple" className="space-y-4">
-          {/* Title + Category */}
+                <TabsContent value="simple" className="space-y-4">
+          {/* AI Generate Section */}
+          <Collapsible open={aiOpen} onOpenChange={setAiOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="outline"
+                type="button"
+                className="w-full justify-between border-dashed border-neutral-700 bg-[#0d0d0d] text-neutral-300 hover:bg-[#1a1a1a] hover:text-neutral-100"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-yellow-400" />
+                  Generate with AI
+                </span>
+                <ChevronDown className={clsx("h-4 w-4 transition-transform", aiOpen && "rotate-180")} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-3 pt-3">
+              <div className="rounded-lg border border-neutral-800 bg-[#0d0d0d] p-4">
+                <p className="mb-2 text-xs text-neutral-500">
+                  Paste a WhatsApp broadcast, social media caption, or inventory description. The AI will
+                  extract product details and fill in the fields below.
+                </p>
+                <textarea
+                  className="w-full rounded-md border border-neutral-700 bg-[#0d0d0d] px-3 py-2 text-sm text-neutral-200 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-600"
+                  rows={5}
+                  placeholder="e.g. MENS CHRONOGRAPH WATCH – Stainless steel case, genuine leather strap, 50m water resistance. Available in black and brown..."
+                  value={aiRawText}
+                  onChange={(e) => setAiRawText(e.target.value)}
+                  disabled={aiGenerating}
+                />
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-neutral-500">
+                    AI will extract name, description &amp; features only — no prices or contact info are saved.
+                  </span>
+                  <Button
+                    size="sm"
+                    onClick={handleAiGenerate}
+                    disabled={aiGenerating || !aiRawText.trim()}
+                    className="gap-2"
+                  >
+                    {aiGenerating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Generate with AI
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
+                                                                                {/* Title + Category */}
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2 sm:col-span-2">
               <Label>Name</Label>
@@ -605,8 +744,64 @@ export default function ProductForm({ productId }: { productId?: string }) {
           </Collapsible>
         </TabsContent>
 
-        <TabsContent value="variable" className="space-y-4">
-          {/* Title + Category */}
+                <TabsContent value="variable" className="space-y-4">
+          {/* AI Generate Section */}
+          <Collapsible open={aiOpen} onOpenChange={setAiOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="outline"
+                type="button"
+                className="w-full justify-between border-dashed border-neutral-700 bg-[#0d0d0d] text-neutral-300 hover:bg-[#1a1a1a] hover:text-neutral-100"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-yellow-400" />
+                  Generate with AI
+                </span>
+                <ChevronDown className={clsx("h-4 w-4 transition-transform", aiOpen && "rotate-180")} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-3 pt-3">
+              <div className="rounded-lg border border-neutral-800 bg-[#0d0d0d] p-4">
+                <p className="mb-2 text-xs text-neutral-500">
+                  Paste a WhatsApp broadcast, social media caption, or inventory description. The AI will
+                  extract product details and fill in the fields below.
+                </p>
+                <textarea
+                  className="w-full rounded-md border border-neutral-700 bg-[#0d0d0d] px-3 py-2 text-sm text-neutral-200 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-600"
+                  rows={5}
+                  placeholder="e.g. MENS CHRONOGRAPH WATCH – Stainless steel case, genuine leather strap, 50m water resistance. Available in black and brown..."
+                  value={aiRawText}
+                  onChange={(e) => setAiRawText(e.target.value)}
+                  disabled={aiGenerating}
+                />
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-neutral-500">
+                    AI will extract name, description &amp; features only — no prices or contact info are saved.
+                  </span>
+                  <Button
+                    size="sm"
+                    onClick={handleAiGenerate}
+                    disabled={aiGenerating || !aiRawText.trim()}
+                    className="gap-2"
+                  >
+                    {aiGenerating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Generate with AI
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
+                    {/* Title + Category */}
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2 sm:col-span-2">
               <Label>Name</Label>
@@ -614,7 +809,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
             </div>
             <div className="space-y-2">
               <Label>Category</Label>
-                                                        <div className="relative" ref={categoryRef}>
+                                    <div className="relative" ref={categoryRef}>
                 <div className="flex flex-wrap items-center gap-2 rounded-md border border-neutral-200 bg-white p-1.5 min-h-[38px] dark:border-neutral-700 dark:bg-neutral-900 focus-within:ring-2 focus-within:ring-neutral-950 focus-within:ring-offset-2">
                   {/* Display selected categories as badges */}
                   {form.categories.map((categoryId) => {
@@ -903,14 +1098,61 @@ export default function ProductForm({ productId }: { productId?: string }) {
             </div>
           )}
 
-          <Dialog
-            open={variantImageModal !== null}
-            onOpenChange={(open) => !open && setVariantImageModal(null)}
-          >
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Select Variant Image</DialogTitle>
-              </DialogHeader>
+          {/* AI Product Picker Dialog — shown when multiple products are returned */}
+                    <Dialog open={aiProductPickerOpen} onOpenChange={setAiProductPickerOpen}>
+                      <DialogContent className="sm:max-w-lg">
+                        <DialogHeader>
+                          <DialogTitle>Select Product to Fill Form</DialogTitle>
+                        </DialogHeader>
+                        <p className="text-sm text-neutral-500">
+                          The AI found {aiProducts.length} products. Choose which one to populate the form with.
+                        </p>
+                        <div className="max-h-72 space-y-2 overflow-y-auto">
+                          {aiProducts.map((product, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                applyAiProduct(idx);
+                                setAiProductPickerOpen(false);
+                                toast.success("Applied product details! Review and adjust as needed.");
+                              }}
+                              className={clsx(
+                                "w-full rounded-lg border p-3 text-left transition-colors hover:border-neutral-400 dark:hover:border-neutral-500",
+                                idx === aiSelectedIndex
+                                  ? "border-neutral-900 bg-neutral-100 dark:border-neutral-400 dark:bg-neutral-800"
+                                  : "border-neutral-200 dark:border-neutral-700"
+                              )}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+                                  {product.name || "Unnamed Product"}
+                                </span>
+                                {idx === aiSelectedIndex ? (
+                                  <Badge variant="secondary" className="text-xs">Current</Badge>
+                                ) : null}
+                              </div>
+                              {product.keyFeatures?.length ? (
+                                <ul className="mt-1 list-disc space-y-0 pl-4 text-xs text-neutral-500">
+                                  {product.keyFeatures.slice(0, 3).map((f, i) => (
+                                    <li key={i} className="truncate">{f}</li>
+                                  ))}
+                                </ul>
+                              ) : null}
+                            </button>
+                          ))}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog
+                      open={variantImageModal !== null}
+                      onOpenChange={(open) => !open && setVariantImageModal(null)}
+                    >
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Select Variant Image</DialogTitle>
+                        </DialogHeader>
               <Tabs defaultValue="existing">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="existing">Product Images</TabsTrigger>
