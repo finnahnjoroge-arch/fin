@@ -73,7 +73,7 @@ export default function MenuDrawer({
             leaveFrom="translate-x-0"
             leaveTo="translate-x-[-100%]"
           >
-            <Dialog.Panel className="fixed bottom-0 left-0 top-0 flex w-[82%] max-w-xs flex-col bg-white shadow-xl">
+            <Dialog.Panel className="fixed bottom-0 left-0 top-0 flex w-[82%] max-w-[300px] flex-col bg-white shadow-xl">
               {/* Header / Close */}
               <div className="flex items-center justify-end border-b border-neutral-200 px-4 py-3">
                 <button
@@ -95,29 +95,29 @@ export default function MenuDrawer({
                 </Suspense>
               </div>
 
-              {/* Tabs */}
-              <div className="flex border-b border-neutral-200">
-                <button
-                  onClick={() => setTab("categories")}
-                  className={`flex-1 border-b-2 px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide transition-colors ${
-                    tab === "categories"
-                      ? "border-red-600 text-neutral-900"
-                      : "border-transparent text-neutral-400 hover:text-neutral-600"
-                  }`}
-                >
-                  All Categories
-                </button>
-                <button
-                  onClick={() => setTab("account")}
-                  className={`flex-1 border-b-2 px-4 py-3 text-left text-sm font-semibold uppercase tracking-wide transition-colors ${
-                    tab === "account"
-                      ? "border-red-600 text-neutral-900"
-                      : "border-transparent text-neutral-400 hover:text-neutral-600"
-                  }`}
-                >
-                  Quick Links
-                </button>
-              </div>
+                                                                                    {/* Tabs */}
+                                          <div className="flex border-b border-neutral-200">
+                                            <button
+                                              onClick={() => setTab("categories")}
+                                              className={`flex-1 border-b-2 px-4 py-3 text-center text-sm font-semibold uppercase tracking-wide transition-colors ${
+                                                tab === "categories"
+                                                  ? "border-red-600 text-neutral-900"
+                                                  : "border-transparent text-neutral-400 hover:text-neutral-600"
+                                              }`}
+                                            >
+                                              All Categories
+                                            </button>
+                                            <button
+                                              onClick={() => setTab("account")}
+                                              className={`flex-1 border-b-2 px-4 py-3 text-center text-sm font-semibold uppercase tracking-wide transition-colors ${
+                                                tab === "account"
+                                                  ? "border-red-600 text-neutral-900"
+                                                  : "border-transparent text-neutral-400 hover:text-neutral-600"
+                                              }`}
+                                            >
+                                              Quick Links
+                                            </button>
+                                          </div>
 
               {/* Content */}
               <div className="flex-1 overflow-y-auto">

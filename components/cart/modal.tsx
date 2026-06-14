@@ -278,14 +278,18 @@ export default function CartModal({ navbarDark }: { navbarDark?: boolean }) {
                       />
                     </div>
                     <div className="my-4 border-t border-neutral-200" />
-                    <Link
+                                        <a
                       href="/checkout"
-                      onClick={handleCheckout}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleCheckout();
+                        window.location.href = "/checkout";
+                      }}
                       className="flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-700"
                     >
                       <Lock className="h-4 w-4" />
                       Proceed to Checkout
-                    </Link>
+                    </a>
                   </div>
                 </div>
               )}

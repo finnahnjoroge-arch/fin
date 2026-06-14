@@ -70,17 +70,24 @@ export default async function ProductCategoryPage(props: {
     }),
   ]);
 
-  return (
-    <>
-      <div className="mb-6 flex min-w-0 items-end gap-2 border-b border-neutral-100 pb-4 sm:items-center sm:gap-3">
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
-          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: collection?.title || "Category" }]} />
-          <h1 className="truncate text-xl font-bold text-neutral-900 sm:text-2xl">{collection?.title || "Category"}</h1>
+    return (
+  <>
+    <div className="pt-4 md:pt-6">
+      <div className="flex items-center gap-2 border-b border-neutral-100 pb-4 sm:gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="sm:hidden">
+            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: collection?.title || "Category" }]} titleOnMobile />
+          </div>
+          <div className="hidden items-center gap-3 sm:flex">
+            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: collection?.title || "Category" }]} />
+            <h1 className="truncate text-lg font-bold text-neutral-900 sm:text-2xl">{collection?.title || "Category"}</h1>
+          </div>
         </div>
         <div className="flex-none">
           <FilterList list={sorting} title="Sort by" horizontal />
         </div>
       </div>
+    </div>
       {products.length === 0 ? (
         <p className="py-3 text-lg text-neutral-900">{`No products found in this category`}</p>
       ) : (

@@ -2,7 +2,6 @@ import { Breadcrumbs } from "components/breadcrumbs";
 import Grid from "components/grid";
 import ProductGridItems from "components/layout/product-grid-items";
 import FilterList from "components/layout/search/filter";
-import { StickyWhatsAppButton } from "components/layout/sticky-whatsapp-button";
 import { Pagination } from "components/pagination";
 import { getCategoryBySlug } from "lib/storefront/categories";
 import { sorting } from "lib/storefront/constants";
@@ -69,39 +68,45 @@ export default async function CategoryPage(props: {
       page,
     });
 
-    return (
+        return (
       <>
-        <div className="mx-auto max-w-(--breakpoint-2xl) px-4 pb-4">
-          <div className="mb-3 flex min-w-0 items-end gap-2 border-b border-neutral-200 pb-2 dark:border-neutral-700 sm:mb-6 sm:items-center sm:gap-3 sm:pb-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
-              <div className="sm:-mb-0.5 sm:-mt-1">
-                <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: category.title }]} />
+        {/* Toolbar section with subtle background */}
+        <div className="bg-gradient-to-b from-neutral-100/70 to-neutral-50 border-b border-neutral-200">
+          <div className="mx-auto max-w-(--breakpoint-2xl) px-4 py-1.5 sm:py-2">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="sm:hidden">
+                  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: category.title }]} titleOnMobile />
+                </div>
+                <div className="hidden items-center gap-3 sm:flex">
+                  <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: category.title }]} />
+                  <h1 className="truncate text-lg font-bold sm:text-2xl">{category.title}</h1>
+                </div>
               </div>
-              <h1 className="truncate text-lg font-bold sm:text-2xl">{category.title}</h1>
-            </div>
-            <div className="flex-none">
-              <FilterList list={sorting} title="Sort by" horizontal />
+              <div className="flex-none">
+                <FilterList list={sorting} title="Sort by" horizontal />
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Products section */}
+        <div className="mx-auto max-w-(--breakpoint-2xl) px-4 pb-4">
           {products.length === 0 ? (
             <p className="py-3 text-lg">No products found in this category.</p>
           ) : (
             <>
-              <Grid className="grid-cols-2 lg:grid-cols-6">
-
+              <Grid className="mt-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
                 <ProductGridItems products={products} />
               </Grid>
               <Pagination page={page} totalPages={totalPages} />
             </>
           )}
         </div>
-        <StickyWhatsAppButton
-          phone={settings.whatsappPhone || settings.storePhone}
-          message="Hi, I'm browsing a category and have a question."
-        />
       </>
     );
   } catch {
     return notFound();
   }
 }
+

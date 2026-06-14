@@ -284,8 +284,8 @@ export default function CheckoutPage() {
 
 
                 {/* Delivery Information Card */}
-        <div className="rounded-lg border border-neutral-200 bg-white shadow-sm overflow-hidden">
-          <div className="space-y-4 p-4">
+                <div className="rounded-none md:rounded-lg border border-neutral-200 bg-white shadow-sm overflow-hidden flex flex-col">
+          <div className="space-y-4 p-4 flex-1">
             <div className="space-y-2">
               <Label>Full Name</Label>
               <Input
@@ -295,35 +295,6 @@ export default function CheckoutPage() {
               />
               {errors.fullName && <p className="text-xs text-red-500">{errors.fullName}</p>}
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Phone Number</Label>
-                <Input
-                  value={form.phone}
-                  onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-                  placeholder="0712345678"
-                />
-                {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
-              </div>
-
-
-
-
-
-
-
-
-
-                            <div className="space-y-2">
-                <Label>Email (optional)</Label>
-                <Input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                  placeholder="john@example.com"
-                />
-              </div>
-            </div>
 
 
 
@@ -343,15 +314,45 @@ export default function CheckoutPage() {
 
 
 
-                        <div className="space-y-2">
-              <Label>City</Label>
-              <Input
-                value={form.city}
-                onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
-                placeholder="Nairobi"
-              />
-              {errors.city && <p className="text-xs text-red-500">{errors.city}</p>}
-            </div>
+
+
+
+
+
+
+
+
+
+
+                        <div className="grid gap-4 grid-cols-2">
+                          <div className="space-y-2">
+                            <Label>Phone Number</Label>
+                            <Input
+                              value={form.phone}
+                              onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+                              placeholder="0712345678"
+                            />
+                            {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
+                          </div>
+                          <div className="space-y-2">
+                            <Label>City</Label>
+                            <Input
+                              value={form.city}
+                              onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
+                              placeholder="Nairobi"
+                            />
+                            {errors.city && <p className="text-xs text-red-500">{errors.city}</p>}
+                          </div>
+                        </div>
+                                    <div className="space-y-2">
+                          <Label>Email (optional)</Label>
+                          <Input
+                            type="email"
+                            value={form.email}
+                            onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                            placeholder="john@example.com"
+                          />
+                        </div>
             <div className="space-y-2">
               <Label>Address</Label>
               <textarea
@@ -376,7 +377,7 @@ export default function CheckoutPage() {
                 Add order notes (optional)
               </label>
             </div>
-            {showNotes && (
+                        {showNotes && (
               <div className="space-y-2">
                 <Label>Delivery Notes</Label>
                 <textarea
@@ -389,12 +390,14 @@ export default function CheckoutPage() {
               </div>
             )}
           </div>
-        </div>
 
-        <Button className="w-full" type="submit" disabled={submitting}>
-          {submitting ? "Placing Order..." : "Place Order"}
-        </Button>
-        <p className="text-center text-xs text-neutral-500">Cash on Delivery</p>
+          <div className="border-t border-neutral-200 p-4">
+            <Button className="w-full" type="submit" disabled={submitting}>
+              {submitting ? "Placing Order..." : "Place Order"}
+            </Button>
+            <p className="mt-2 text-center text-xs text-neutral-500">Cash on Delivery</p>
+          </div>
+        </div>
       </form>
 
 

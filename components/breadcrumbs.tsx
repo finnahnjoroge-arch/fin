@@ -9,7 +9,7 @@ interface Crumb {
   href?: string;
 }
 
-export function Breadcrumbs({ items, verticalOnMobile = false, centerOnMobile = false, hideLastOnMobile = false }: { items: Crumb[]; verticalOnMobile?: boolean; centerOnMobile?: boolean; hideLastOnMobile?: boolean }) {
+export function Breadcrumbs({ items, verticalOnMobile = false, centerOnMobile = false, hideLastOnMobile = false, titleOnMobile = false }: { items: Crumb[]; verticalOnMobile?: boolean; centerOnMobile?: boolean; hideLastOnMobile?: boolean; titleOnMobile?: boolean }) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -36,15 +36,15 @@ export function Breadcrumbs({ items, verticalOnMobile = false, centerOnMobile = 
                 {index > 0 && (
                   <ChevronRight className={clsx("h-4 w-4 text-neutral-400", verticalOnMobile && "hidden sm:block")} />
                 )}
-                {item.href && index < items.length - 1 ? (
+                                                                {item.href && index < items.length - 1 ? (
                   <Link
                     href={item.href}
-                    className="max-w-[80px] truncate text-neutral-900 hover:underline sm:max-w-none sm:whitespace-normal"
+                    className="truncate text-neutral-900 hover:underline sm:max-w-none sm:whitespace-normal"
                   >
                     {item.label}
                   </Link>
                 ) : (
-                  <span className="max-w-[100px] truncate text-neutral-900 sm:max-w-none sm:whitespace-normal">{item.label}</span>
+                  <span className={clsx("truncate text-neutral-900 sm:max-w-none sm:whitespace-normal", titleOnMobile && index === items.length - 1 && "text-sm font-bold sm:text-xs sm:font-normal")}>{item.label}</span>
                 )}
               </li>
             );

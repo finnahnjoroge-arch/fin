@@ -11,9 +11,10 @@ export default async function CheckoutLayout({
   children,
 }: React.PropsWithChildren) {
   return (
-    <div className="container mx-auto p-4 md:p-8">
-
-      <h1 className="mb-4 text-2xl font-bold">Checkout</h1>
+    <div className="mx-auto max-w-(--breakpoint-2xl) px-0 md:px-8 md:py-8">
+      <div className="hidden md:block">
+        <h1 className="mb-4 text-2xl font-bold">Checkout</h1>
+      </div>
       {children}
     </div>
   );
