@@ -3,28 +3,33 @@ import { Db, MongoClient } from "mongodb";
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB = process.env.MONGODB_DB_NAME || "test";
 
-let client: MongoClient | null = null;
-let clientPromise: Promise<MongoClient> | null = null;
+if (!MONGODB_URI) throw new Error("MONGODB_URI not defined in environment variables");
+
+const options = {
+  maxPoolSize: 10,
+  minPoolSize: 1,
+  serverSelectionTimeoutMS: 30000,
+  connectTimeoutMS: 30000,
+};
+
+declare global {
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
+}
+
+let clientPromise: Promise<MongoClient>;
+
+if (process.env.NODE_ENV === "development") {
+  if (!global._mongoClientPromise) {
+    const client = new MongoClient(MONGODB_URI, options);
+    global._mongoClientPromise = client.connect();
+  }
+  clientPromise = global._mongoClientPromise;
+} else {
+  const client = new MongoClient(MONGODB_URI, options);
+  clientPromise = client.connect();
+}
 
 export async function connectDB(): Promise<Db> {
-  if (!MONGODB_URI) throw new Error("MONGODB_URI not defined");
-  if (!client) {
-    client = new MongoClient(MONGODB_URI, {
-      serverSelectionTimeoutMS: 30000,
-      connectTimeoutMS: 30000,
-    });
-    clientPromise = client.connect();
-  }
-  if (clientPromise) {
-    await clientPromise;
-  }
-    return client!.db(MONGODB_DB);
+  const client = await clientPromise;
+  return client.db(MONGODB_DB);
 }
-
-export async function disconnectDB() {
-  if (client) {
-    await client.close();
-    client = null;
-  }
-}
-
