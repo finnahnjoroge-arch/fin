@@ -1,38 +1,33 @@
-import type { NextRequest } from "next/server";
+import { auth } from "./auth";
 import { NextResponse } from "next/server";
 
-function getTokenFromCookie(req: NextRequest): string | null {
-  const token = req.cookies.get("authjs.session-token")?.value
-    || req.cookies.get("__Secure-authjs.session-token")?.value
-    || req.cookies.get("next-auth.session-token")?.value
-    || req.cookies.get("__Secure-next-auth.session-token")?.value;
-  return token || null;
-}
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
 
-export function middleware(req: NextRequest) {
-  const { nextUrl } = req;
-  const isAdminRoute = nextUrl.pathname.startsWith("/admin");
-  const isLoginPage = nextUrl.pathname === "/admin/login";
-  const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth");
+  const isAdminRoute =
+    pathname.startsWith("/api/admin") ||
+    pathname.startsWith("/admin");
 
-  if (!isAdminRoute || isApiAuthRoute) {
-    return NextResponse.next();
-  }
+  const isPublic =
+    pathname === "/admin/login" ||
+    pathname === "/api/admin/setup";
 
-  const token = getTokenFromCookie(req);
-  const isLoggedIn = !!token;
+  if (isAdminRoute && !isPublic && !req.auth) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
 
-  if (!isLoggedIn && !isLoginPage) {
-    return NextResponse.redirect(new URL("/admin/login", nextUrl));
-  }
-
-  if (isLoggedIn && isLoginPage) {
-    return NextResponse.redirect(new URL("/admin", nextUrl));
+    const loginUrl = new URL("/admin/login", req.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };
