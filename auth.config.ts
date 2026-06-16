@@ -1,6 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
+import { NextResponse } from "next/server";
 
-// Edge-compatible config — no Node.js imports allowed here
 export const authConfig: NextAuthConfig = {
   pages: {
     signIn: "/admin/login",
@@ -8,17 +8,18 @@ export const authConfig: NextAuthConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isAdminRoute =
-        nextUrl.pathname.startsWith("/admin") ||
-        nextUrl.pathname.startsWith("/api/admin");
       const isPublic =
         nextUrl.pathname === "/admin/login" ||
         nextUrl.pathname === "/api/admin/setup";
-
       if (isPublic) return true;
-      if (isAdminRoute) return isLoggedIn;
+      const isAdminApi = nextUrl.pathname.startsWith("/api/admin");
+      const isAdminPage = nextUrl.pathname.startsWith("/admin");
+      if (isAdminApi && !isLoggedIn) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      if (isAdminPage && !isLoggedIn) return false;
       return true;
     },
   },
-  providers: [], // Providers added in auth.ts, not here
+  providers: [],
 };
