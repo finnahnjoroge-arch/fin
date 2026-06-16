@@ -2,8 +2,10 @@ import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { connectDB } from "./lib/mongodb";
+import { authConfig } from "./auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       name: "credentials",
@@ -13,16 +15,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       authorize: async (credentials) => {
         if (!credentials?.email || !credentials?.password) return null;
-
         const db = await connectDB();
-        const email = credentials.email.trim().toLowerCase();
-        const user = await db.collection('users').findOne({ email });
-        
+        const email = (credentials.email as string).trim().toLowerCase();
+        const user = await db.collection("users").findOne({ email });
         if (!user) return null;
-
-        const isValid = await bcrypt.compare(credentials.password as string, user.password);
+        const isValid = await bcrypt.compare(
+          credentials.password as string,
+          user.password
+        );
         if (!isValid) return null;
-
         return {
           id: (user as any)._id.toString(),
           email: user.email,
@@ -36,6 +37,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     maxAge: 30 * 24 * 60 * 60,
   },
   callbacks: {
+    ...authConfig.callbacks,
     jwt: async ({ token, user }) => {
       if (user) {
         token.id = user.id;
@@ -49,8 +51,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session;
     },
-  },
-  pages: {
-    signIn: "/admin/login",
   },
 });
