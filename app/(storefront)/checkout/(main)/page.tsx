@@ -98,7 +98,7 @@ export default function CheckoutPage() {
         variantId: isSimpleProduct ? undefined : line.merchandise.id,
         quantity: line.quantity,
         price: unitPrice,
-        name: line.merchandise.title,
+        name: line.merchandise.title && line.merchandise.title !== "Default Title" && !isSimpleProduct ? `${line.merchandise.product.title} — ${line.merchandise.title}` : line.merchandise.product.title,
         sku: line.merchandise.sku || line.merchandise.product.sku || "",
         image:
           line.merchandise.product.image?.url ||
