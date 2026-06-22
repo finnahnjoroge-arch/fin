@@ -1,4 +1,4 @@
-import { connectDB } from "@/lib/mongodb";
+﻿import { connectDB } from "@/lib/mongodb";
 
 export interface FeedProduct {
   id: string;
@@ -56,7 +56,7 @@ export async function getFeedProducts(): Promise<FeedProduct[]> {
     const parentId = doc._id.toString();
     const baseTitle = doc.name || "";
     const description = (doc.description || "").replace(/<[^>]*>/g, "").trim();
-    const baseLink = `https://watchesinkenya.co.ke/product/${doc.slug}`;
+    const baseLink = `https://finnorah.co.ke/product/${doc.slug}`;
     const baseImage = doc.images?.[0] || "";
     const basePrice = doc.price || 0;
     const baseCompare = doc.comparePrice || undefined;
@@ -74,7 +74,7 @@ export async function getFeedProducts(): Promise<FeedProduct[]> {
       // Expand each variant into its own feed item
       for (const v of doc.variants) {
         const variantId = v.sku || v._id?.toString() || `${parentId}_${v.name}`;
-        const variantTitle = `${baseTitle} — ${v.name}`;
+        const variantTitle = `${baseTitle} ΓÇö ${v.name}`;
         const variantImage = v.images?.[0] || baseImage;
         const variantPrice = v.price ?? basePrice;
         const variantSku = v.sku || doc.sku;
@@ -189,8 +189,8 @@ export function formatGoogleXml(products: FeedProduct[]): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
   <channel>
-    <title>Watches in Kenya</title>
-    <link>https://watchesinkenya.co.ke</link>
+    <title>Finnorah</title>
+    <link>https://finnorah.co.ke</link>
     <description>Product feed for Google Merchant Center</description>
     ${items}
   </channel>
@@ -222,8 +222,8 @@ export function formatFacebookXml(products: FeedProduct[]): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
-    <title>Watches in Kenya</title>
-    <link>https://watchesinkenya.co.ke</link>
+    <title>Finnorah</title>
+    <link>https://finnorah.co.ke</link>
     <description>Product feed for Facebook Catalog</description>
     ${items}
   </channel>

@@ -4,7 +4,7 @@ import { twMerge } from "tailwind-merge";
 
 export const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : "https://watchesinkenya.co.ke";
+  : "https://finnorah.co.ke";
 
 export const createUrl = (
   pathname: string,
