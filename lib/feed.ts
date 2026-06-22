@@ -1,4 +1,4 @@
-﻿import { connectDB } from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 
 export interface FeedProduct {
   id: string;
@@ -13,6 +13,7 @@ export interface FeedProduct {
   condition: "new";
   brand?: string;
   category?: string;
+  googleProductCategory?: string;
   sku?: string;
   variantAttributes?: Record<string, string>;
 }
@@ -38,6 +39,24 @@ function getVariantAvailability(v: any): "in stock" | "out of stock" {
   return (v.enabled !== false) && (v.stock > 0) ? "in stock" : "out of stock";
 }
 
+/**
+ * Maps a category name to a Google Product Category ID.
+ * Add more mappings as needed from Google's taxonomy.
+ */
+function getGoogleProductCategory(categoryName: string): string {
+  const googleCategoryMap: Record<string, string> = {
+    "Watches": "143",
+    "Men's Watches": "143",
+    "Women's Watches": "143",
+    "Smartwatches": "781",
+    "Watch Bands": "178",
+    "Watch Accessories": "178",
+    "Jewelry": "389",
+    "Fashion": "166",
+  };
+  return googleCategoryMap[categoryName] || categoryName;
+}
+
 export async function getFeedProducts(): Promise<FeedProduct[]> {
   const db = await connectDB();
 
@@ -61,8 +80,24 @@ export async function getFeedProducts(): Promise<FeedProduct[]> {
     const basePrice = doc.price || 0;
     const baseCompare = doc.comparePrice || undefined;
 
-    const categoryId = doc.category?.toString?.() || doc.category;
-    const category = catMap.get(String(categoryId)) || undefined;
+    // Support both old single `category` and new `categories` array
+    let category: string | undefined;
+    const categoryIds = new Set<string>();
+    if (Array.isArray(doc.categories) && doc.categories.length > 0) {
+      for (const c of doc.categories) {
+        if (c) categoryIds.add(c.toString());
+      }
+    }
+    if (doc.category) {
+      categoryIds.add(doc.category.toString());
+    }
+    const categoryNames = [...categoryIds].map(id => catMap.get(id)).filter((n): n is string => !!n);
+    if (categoryNames.length > 0) {
+      category = categoryNames.join(" > ");
+    }
+
+    // Determine Google Product Category from the first category name
+    const googleProductCategory = category ? getGoogleProductCategory(category) : undefined;
 
     let brand: string | undefined;
     const brandSlug = doc.brand?.toString?.() || doc.brand;
@@ -71,10 +106,9 @@ export async function getFeedProducts(): Promise<FeedProduct[]> {
     }
 
     if (doc.type === "variable" && doc.variants?.length) {
-      // Expand each variant into its own feed item
       for (const v of doc.variants) {
         const variantId = v.sku || v._id?.toString() || `${parentId}_${v.name}`;
-        const variantTitle = `${baseTitle} ΓÇö ${v.name}`;
+        const variantTitle = `${baseTitle} - ${v.name}`;
         const variantImage = v.images?.[0] || baseImage;
         const variantPrice = v.price ?? basePrice;
         const variantSku = v.sku || doc.sku;
@@ -92,12 +126,12 @@ export async function getFeedProducts(): Promise<FeedProduct[]> {
           condition: "new",
           brand,
           category,
+          googleProductCategory,
           sku: variantSku ? String(variantSku) : undefined,
           variantAttributes: v.attributes || undefined,
         });
       }
     } else {
-      // Simple product (or variable with no variants generated yet)
       const availability = doc.stock > 0 ? "in stock" : "out of stock";
       result.push({
         id: doc.sku || parentId,
@@ -111,6 +145,7 @@ export async function getFeedProducts(): Promise<FeedProduct[]> {
         condition: "new",
         brand,
         category,
+        googleProductCategory,
         sku: doc.sku ? String(doc.sku) : undefined,
       });
     }
@@ -179,6 +214,7 @@ export function formatGoogleXml(products: FeedProduct[]): string {
       <g:condition>${p.condition}</g:condition>
       ${p.brand ? `<g:brand>${escapeXml(p.brand)}</g:brand>` : ""}
       ${p.category ? `<g:product_type>${escapeXml(p.category)}</g:product_type>` : ""}
+      ${p.googleProductCategory ? `<g:google_product_category>${escapeXml(p.googleProductCategory)}</g:google_product_category>` : ""}
       ${p.sku ? `<g:sku>${escapeXml(p.sku)}</g:sku>` : ""}
       ${googleVariantAttributes(p.variantAttributes)}
     </item>
@@ -213,6 +249,7 @@ export function formatFacebookXml(products: FeedProduct[]): string {
       <condition>${p.condition}</condition>
       ${p.brand ? `<brand>${escapeXml(p.brand)}</brand>` : ""}
       ${p.category ? `<product_type>${escapeXml(p.category)}</product_type>` : ""}
+      ${p.googleProductCategory ? `<google_product_category>${escapeXml(p.googleProductCategory)}</google_product_category>` : ""}
       ${facebookVariantAttributes(p.variantAttributes)}
     </item>
   `
