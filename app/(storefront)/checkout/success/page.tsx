@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageSpinner } from "components/spinner";
 import { trackPurchase } from "lib/meta-pixel";
 import { CircleCheck, ShoppingBag } from "lucide-react";
 import Link from "next/link";
@@ -47,11 +48,7 @@ function CheckoutContent() {
   }, [orderId]);
 
   if (loading) {
-    return (
-      <div className="container mx-auto p-4 md:p-8 text-center">
-        <p className="text-neutral-500">Loading order details...</p>
-      </div>
-    );
+    return <PageSpinner text="Loading order details…" />;
   }
 
   if (!order) {
@@ -163,11 +160,7 @@ function CheckoutContent() {
 
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense fallback={
-      <div className="container mx-auto p-4 md:p-8 text-center">
-        <p className="text-neutral-500">Loading order details...</p>
-      </div>
-    }>
+    <Suspense fallback={<PageSpinner text="Loading order details…" />}>
       <CheckoutContent />
     </Suspense>
   );
