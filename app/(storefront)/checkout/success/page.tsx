@@ -48,7 +48,7 @@ function CheckoutContent() {
   }, [orderId]);
 
   if (loading) {
-    return <PageSpinner text="Loading order details…" />;
+    return <PageSpinner text="Loading order detailsâ€¦" />;
   }
 
   if (!order) {
@@ -160,7 +160,7 @@ function CheckoutContent() {
 
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense fallback={<PageSpinner text="Loading order details…" />}>
+    <Suspense fallback={<PageSpinner text="Loading order detailsâ€¦" />}>
       <CheckoutContent />
     </Suspense>
   );

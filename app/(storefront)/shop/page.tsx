@@ -3,7 +3,6 @@ import Grid from "components/grid";
 import ProductGridItems from "components/layout/product-grid-items";
 import Collections from "components/layout/search/collections";
 import FilterList from "components/layout/search/filter";
-import { StickyWhatsAppButton } from "components/layout/sticky-whatsapp-button";
 import { Pagination } from "components/pagination";
 import { sorting } from "lib/storefront/constants";
 import { getProducts } from "lib/storefront/products";
@@ -136,10 +135,6 @@ export default async function ShopPage(props: {
         )}
       </div>
 
-      <StickyWhatsAppButton
-        phone={settings.whatsappPhone || settings.storePhone}
-        message="Hi, I'm browsing your shop and have a question."
-      />
     </>
   );
 }

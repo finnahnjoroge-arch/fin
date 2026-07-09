@@ -1,5 +1,5 @@
 import { PageSpinner } from "components/spinner";
 
 export default function Loading() {
-  return <PageSpinner text="Loading checkout…" />;
+  return <PageSpinner text="Loading checkout..." />;
 }

@@ -33,6 +33,12 @@ export default function CheckoutPage() {
     currency: "KES",
   });
 
+  // Remove any leftover spinner overlay from cart modal navigation
+  useEffect(() => {
+    const overlay = document.getElementById('checkout-spinner-overlay');
+    if (overlay) overlay.remove();
+  }, []);
+
   useEffect(() => {
     fetch("/api/storefront/settings")
       .then((r) => r.json())
@@ -49,7 +55,11 @@ export default function CheckoutPage() {
       .catch(() => { /* ignore */ });
   }, []);
 
-  if (!cart || cart.lines.length === 0) {
+  if (cart === undefined) {
+    return <PageSpinner text="Loading checkout\u2026" />;
+  }
+
+  if (cart.lines.length === 0) {
     return (
       <div className="py-12 text-center">
         <p className="text-lg text-neutral-500">Your cart is empty.</p>
@@ -397,6 +407,68 @@ export default function CheckoutPage() {
             </Button>
             <p className="mt-2 text-center text-xs text-neutral-500">Cash on Delivery</p>
           </div>
+            {/* Mobile Order Summary */}
+            <div className="block md:hidden">
+              <div className="border-t border-neutral-200 my-2" />
+              {/* Order Summary - compact */}
+              
+              <div className="rounded-lg border border-neutral-200 bg-white shadow-sm min-w-0 overflow-hidden">
+              <div className="border-b border-neutral-100 px-4 py-3">
+              <h2 className="text-base font-semibold text-neutral-900">Order Summary</h2>
+              </div>
+              <div className="divide-y divide-neutral-100 px-4 py-2">
+              {cart.lines.map((line, i) => (
+              
+              <div key={i} className="flex items-center gap-3 py-2 min-w-0">
+              <div className="relative h-12 w-12 flex-none overflow-hidden rounded border border-neutral-200 bg-neutral-50">
+              <Image
+              src={
+              line.merchandise.product.image?.url ||
+              line.merchandise.product.featuredImage?.url ||
+              ""
+              }
+              alt={line.merchandise.product.title}
+              fill
+              className="object-cover"
+              />
+              </div>
+              <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-medium text-neutral-900">
+              {line.merchandise.product.title}
+              </p>
+              <p className="text-xs text-neutral-500">Qty: {line.quantity}</p>
+              </div>
+              <Price
+              className="flex-none text-sm text-neutral-900"
+              amount={line.cost.totalAmount.amount}
+              currencyCode={line.cost.totalAmount.currencyCode}
+              />
+              </div>
+              ))}
+              </div>
+              <div className="border-t border-neutral-100 px-4 py-3 space-y-1.5 text-sm">
+              {settings.shippingNote && (
+              <p className="text-xs text-neutral-500">{settings.shippingNote}</p>
+              )}
+              <div className="flex justify-between">
+              <span className="text-neutral-600">Subtotal</span>
+              <Price amount={subtotal.toString()} currencyCode={cart.cost.subtotalAmount.currencyCode} />
+              </div>
+              <div className="flex justify-between">
+              <span className="text-neutral-600">Delivery</span>
+              {shippingCost === 0 ? (
+              <span className="text-sm font-medium text-green-600">Free</span>
+              ) : (
+              <Price amount={shippingCost.toString()} currencyCode={cart.cost.subtotalAmount.currencyCode} />
+              )}
+              </div>
+              <div className="flex justify-between border-t border-neutral-100 pt-2 text-base font-bold text-neutral-900">
+              <span>Total</span>
+              <Price amount={total.toString()} currencyCode={cart.cost.subtotalAmount.currencyCode} />
+              </div>
+              </div>
+              </div>
+            </div>
         </div>
       </form>
 
@@ -459,7 +531,7 @@ export default function CheckoutPage() {
 
             {/* Order Summary - compact */}
 
-      <div className="rounded-lg border border-neutral-200 bg-white shadow-sm min-w-0 overflow-hidden">
+      <div className="rounded-lg border hidden md:block border-neutral-200 bg-white shadow-sm min-w-0 overflow-hidden">
         <div className="border-b border-neutral-100 px-4 py-3">
           <h2 className="text-base font-semibold text-neutral-900">Order Summary</h2>
         </div>
@@ -518,3 +590,4 @@ export default function CheckoutPage() {
     </div>
   );
 }
+

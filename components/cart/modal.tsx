@@ -8,7 +8,7 @@ import { createUrl } from "lib/utils";
 import { Lock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
 import { useCart } from "./cart-context";
 import { DeleteItemButton } from "./delete-item-button";
@@ -25,6 +25,7 @@ export default function CartModal({ navbarDark }: { navbarDark?: boolean }) {
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
   const pathname = usePathname();
+  const router = useRouter();
     const handleCheckout = () => {
     closeCart();
     // Fire pixel after navigation starts to avoid blocking
@@ -278,18 +279,22 @@ export default function CartModal({ navbarDark }: { navbarDark?: boolean }) {
                       />
                     </div>
                     <div className="my-4 border-t border-neutral-200" />
-                                        <a
-                      href="/checkout"
+                                        <button
+                      
                       onClick={(e) => {
-                        e.preventDefault();
+                        const el = document.createElement('div');
+                        el.id = 'checkout-spinner-overlay';
+                        el.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,0.95);backdrop-filter:blur(2px)';
+                        el.innerHTML = '<div style="width:48px;height:48px;border:4px solid #2563eb;border-top-color:transparent;border-radius:50%;animation:s 0.7s linear infinite"></div><p style="margin-top:16px;font-size:14px;font-weight:500;color:#737373;animation:p 2s ease-in-out infinite">Loading checkout\u2026</p><style>@keyframes s{to{transform:rotate(360deg)}}@keyframes p{0%,100%{opacity:1}50%{opacity:0.5}}</style>';
+                        document.body.appendChild(el);
                         handleCheckout();
-                        window.location.href = "/checkout";
+                        router.push('/checkout');
                       }}
                       className="flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-700"
                     >
                       <Lock className="h-4 w-4" />
                       Proceed to Checkout
-                    </a>
+                    </button>
                   </div>
                 </div>
               )}
