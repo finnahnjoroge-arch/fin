@@ -27,25 +27,24 @@ export default function CartModal({ navbarDark }: { navbarDark?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleCheckout = useCallback(() => {
-    closeCart();
-    // Fire pixel after navigation starts to avoid blocking
+    const handleCheckout = useCallback(() => {
+    // Fire pixel
     if (cart?.lines.length) {
-      setTimeout(() => {
-        trackInitiateCheckout({
-          content_ids: cart.lines
-            .map((item) => item.merchandise.id || item.merchandise.product.id)
-            .filter(Boolean),
-          content_type: "product",
-          value: Number(cart.cost.totalAmount.amount),
-          currency: cart.cost.totalAmount.currencyCode,
-          num_items: cart.totalQuantity,
-        });
-      }, 0);
+      trackInitiateCheckout({
+        content_ids: cart.lines
+          .map((item) => item.merchandise.id || item.merchandise.product.id)
+          .filter(Boolean),
+        content_type: "product",
+        value: Number(cart.cost.totalAmount.amount),
+        currency: cart.cost.totalAmount.currencyCode,
+        num_items: cart.totalQuantity,
+      });
     }
-    // Only navigate if not already on the checkout page
+    // Navigate immediately — the pathname change will close the drawer
     if (pathname !== "/checkout") {
       router.push("/checkout");
+    } else {
+      closeCart();
     }
   }, [cart, pathname, router]);
 
