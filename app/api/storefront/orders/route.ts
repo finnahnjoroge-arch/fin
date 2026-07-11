@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
           items: orderData.items,
           total: orderData.total,
           phone: phone || "",
-          address: `${address}, ${city}, ${country}`,
+          address: `${address}, ${city}, ${country}`, notes: notes || "",
           productUrl: body.items?.[0]?.productId ? `https://finnorah.co.ke/product/${body.items[0].handle || ""}` : "",
         }),
       });

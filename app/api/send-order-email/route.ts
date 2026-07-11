@@ -57,7 +57,7 @@ function itemsList(items: any[]) {
 export async function POST(req: Request) {
   const {
     customerEmail, customerName, orderId, total, items,
-    phone, address, cancelled, shipped
+    phone, address, notes, cancelled, shipped
   } = await req.json();
 
   const settings = await getStoreSettings();
@@ -135,7 +135,8 @@ export async function POST(req: Request) {
           `<strong>Name:</strong> ${customerName}`,
           `<strong>Email:</strong> ${customerEmail}`,
           ...(phone   ? [`<strong>Phone:</strong> ${phone}`]     : []),
-          ...(address ? [`<strong>Address:</strong> ${address}`] : [])
+          ...(address ? [`<strong>Address:</strong> ${address}`] : []),
+          ...(notes     ? [`<strong>Notes:</strong> ${notes}`]     : [])
         )}
         ${ctaButton('View in Admin Panel →', `${STORE_URL}/admin/login`)}
       `)
@@ -146,3 +147,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error }, { status: 500 });
   }
 }
+
