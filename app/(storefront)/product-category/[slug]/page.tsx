@@ -57,10 +57,7 @@ export default async function ProductCategoryPage(props: {
   const pageParam = searchParams?.page;
   const page = typeof pageParam === "string" ? parseInt(pageParam, 10) || 1 : 1;
 
-
-
-
-        const [collection, { products, totalPages }] = await Promise.all([
+          const [collection, { products, totalPages }] = await Promise.all([
     getCollection(params.slug),
     getCollectionProducts({
       collection: params.slug,
@@ -70,35 +67,44 @@ export default async function ProductCategoryPage(props: {
     }),
   ]);
 
-    return (
-  <>
-    <div className="pt-4 md:pt-6">
-      <div className="flex items-center gap-2 border-b border-neutral-100 pb-4 sm:gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="sm:hidden">
-            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: collection?.title || "Category" }]} titleOnMobile />
+  if (!collection) return notFound();
+
+  return (
+    <>
+      {/* Toolbar section with subtle background - compact version */}
+      <div className="bg-gradient-to-b from-neutral-100/70 to-neutral-50 border-b border-neutral-200">
+        <div className="mx-auto max-w-(--breakpoint-2xl) px-4 py-1.5 sm:py-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="sm:hidden">
+                <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: collection?.title || "Category" }]} titleOnMobile />
+              </div>
+              <div className="hidden items-center gap-3 sm:flex">
+                <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: collection?.title || "Category" }]} />
+                <h1 className="truncate text-lg font-bold sm:text-2xl">{collection?.title || "Category"}</h1>
+              </div>
+            </div>
+            <div className="flex-none">
+              <FilterList list={sorting} title="Sort by" horizontal />
+            </div>
           </div>
-          <div className="hidden items-center gap-3 sm:flex">
-            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: collection?.title || "Category" }]} />
-            <h1 className="truncate text-lg font-bold text-neutral-900 sm:text-2xl">{collection?.title || "Category"}</h1>
-          </div>
-        </div>
-        <div className="flex-none">
-          <FilterList list={sorting} title="Sort by" horizontal />
         </div>
       </div>
-    </div>
-      {products.length === 0 ? (
-        <p className="py-3 text-lg text-neutral-900">{`No products found in this category`}</p>
-      ) : (
-        <>
 
-          <Grid className="grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
-            <ProductGridItems products={products} />
-          </Grid>
-          <Pagination page={page} totalPages={totalPages} />
-        </>
-      )}
+      {/* Products section */}
+      <div className="mx-auto max-w-(--breakpoint-2xl) px-4 pb-4">
+        {products.length === 0 ? (
+          <p className="py-3 text-lg">{`No products found in this collection`}</p>
+        ) : (
+          <>
+            <Grid className="mt-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
+              <ProductGridItems products={products} />
+            </Grid>
+            <Pagination page={page} totalPages={totalPages} />
+          </>
+        )}
+      </div>
     </>
   );
 }
+
