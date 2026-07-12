@@ -57,7 +57,7 @@ export default async function ShopPage(props: {
   return (
     <>
       {/* Toolbar section with subtle background - compact version */}
-      <div className="bg-gradient-to-b from-neutral-100/70 to-neutral-50 border-b border-neutral-200">
+      <div className="sticky-toolbar bg-gradient-to-b from-neutral-100/70 to-neutral-50 border-b border-neutral-200 shadow-lg">
         <div className="mx-auto max-w-(--breakpoint-2xl) px-4 py-1.5 sm:py-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0 flex-1">

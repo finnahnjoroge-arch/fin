@@ -147,7 +147,7 @@ export function CategoryCircles({ categories }: { categories: Category[] }) {
           <div
             ref={scrollContainerRef}
             onScroll={checkScroll}
-            className="scrollbar-hide flex w-full gap-0 overflow-x-auto overflow-y-visible px-0 pb-0 pt-1 sm:gap-1 md:gap-2 md:px-1 md:pt-2 lg:px-10"
+            className="scrollbar-hide flex w-full gap-0 overflow-x-auto overflow-y-visible px-0 pb-0 pt-1 sm:gap-1 md:justify-center md:gap-2 md:px-1 md:pt-2 lg:px-10"
             style={{ scrollBehavior: "smooth", scrollSnapType: "x mandatory" }}
           >
             {visibleCategories.map((category, index) => (

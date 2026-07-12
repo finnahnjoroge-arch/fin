@@ -36,20 +36,17 @@ export function GridTileImage({
         },
       )}
     >
-      {/* Square image container - pure white, shows full product */}
+      {/* Square image container */}
       <div className="relative aspect-square w-full overflow-hidden bg-white">
         {props.src ? (
-          <div className="relative flex h-full w-full items-center justify-center p-4 sm:p-5">
-            <Image
-              className={clsx("relative h-full w-full object-contain drop-shadow-sm", {
-                "transition-transform duration-500 ease-out group-hover:scale-105":
-                  isInteractive,
-              })}
+          <Image
+            className={clsx("object-contain", {
+              "transition-transform duration-500 ease-out group-hover:scale-105": isInteractive,
+            })}
               {...props}
             />
-          </div>
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-white">
+          <div className="flex h-full w-full items-center justify-center bg-neutral-50">
             <div className="text-neutral-300 text-sm">No image</div>
           </div>
                 )}

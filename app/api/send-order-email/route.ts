@@ -113,7 +113,7 @@ export async function POST(req: Request) {
         <p>Your order has been received and is being processed.</p>
         ${infoBox('Order Details', `<strong>Order ID:</strong> #${orderId}`, `<strong>Total:</strong> KES ${total}`)}
         ${itemsList(items)}
-        <p>We'll notify you once your order ships. If you need help, feel free to call us:</p>
+        <p>We'll notify you once your order dispatches. If you need help, feel free to call us:</p>
         ${STORE_PHONE ? phoneBox(STORE_PHONE) : ''}
         ${ctaButton('Continue Shopping →', STORE_URL)}
       `)

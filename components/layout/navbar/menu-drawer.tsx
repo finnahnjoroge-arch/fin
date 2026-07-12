@@ -43,9 +43,9 @@ export default function MenuDrawer({
       <button
         onClick={openDrawer}
         aria-label="Open menu"
-        className={clsx("flex h-9 w-9 items-center justify-center rounded-md md:h-11 md:w-11 transition-colors", navbarDark ? "border-neutral-700 text-white hover:bg-neutral-800" : "border-neutral-200 text-neutral-900 hover:bg-neutral-50")}
+                className={clsx("flex h-10 w-10 items-center justify-center rounded-md md:h-12 md:w-12 transition-colors", navbarDark ? "border-neutral-700 text-white hover:bg-neutral-800" : "border-neutral-200 text-neutral-900 hover:bg-neutral-50")}
       >
-        <svg className="h-5 w-5 md:h-6 md:w-6" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="h-6 w-6 md:h-7 md:w-7" fill="currentColor" viewBox="0 0 24 24">
           <path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z" />
         </svg>
       </button>

@@ -32,9 +32,9 @@ export function Navbar({
 
 
   return (
-    <nav className={clsx("sticky top-0 z-50 shadow-sm", dark ? "bg-black" : "bg-white")}>
+    <nav className={clsx("sticky top-0 z-50 shadow-md", dark ? "bg-black" : "bg-white")}>
       {/* Main navbar */}
-      <div className={clsx("px-3 pb-1 pt-2 lg:px-6 lg:pb-1.5 lg:pt-3", dark ? "border-neutral-700" : "border-neutral-200")}>
+      <div className={clsx("px-3 pb-2 pt-2 lg:px-6 lg:pb-3 lg:pt-3", dark ? "border-neutral-700" : "border-neutral-200")}>
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 md:gap-4">
           {/* Left: Hamburger Menu + Logo */}
           <div className="flex items-center gap-1.5 md:gap-4">
@@ -51,7 +51,7 @@ export function Navbar({
                 <img
                   src={settings.logoUrl}
                   alt={settings.storeName}
-                  className="h-7 w-auto max-w-[110px] object-contain md:h-8 md:max-w-[120px]"
+                  className="h-8 w-auto max-w-[130px] object-contain md:h-10 md:max-w-[150px]"
                 />
               ) : (
                 <>

@@ -76,7 +76,13 @@ button:not([disabled]) {
     scrollbar-color: var(--color-neutral-600, #525252) transparent;
   }
 
-  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    .dark .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: var(--color-neutral-600, #525252);
+  }
+
+  .sticky-toolbar {
+    position: sticky;
+    top: 0px;
+    z-index: 40;
   }
 }
