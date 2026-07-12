@@ -51,25 +51,41 @@ export default async function CategoryPage(props: {
   if (!collection) return notFound();
 
   return (
-    <div className="mx-auto max-w-(--breakpoint-2xl) px-4 pb-4">
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: collection.title }]} />
-
-      <div className="mb-6 flex items-center gap-2 border-b border-neutral-200 pb-3 dark:border-neutral-700 sm:gap-3">
-        <h1 className="text-2xl font-bold">{collection.title}</h1>
-        <div className="min-w-0 flex-1 sm:ml-auto sm:flex-none">
-          <FilterList list={sorting} title="Sort by" horizontal />
+    <>
+      {/* Toolbar section with subtle background - compact version */}
+      <div className="bg-gradient-to-b from-neutral-100/70 to-neutral-50 border-b border-neutral-200">
+        <div className="mx-auto max-w-(--breakpoint-2xl) px-4 py-1.5 sm:py-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="sm:hidden">
+                <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: collection.title }]} titleOnMobile />
+              </div>
+              <div className="hidden items-center gap-3 sm:flex">
+                <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: collection.title }]} />
+                <h1 className="truncate text-lg font-bold sm:text-2xl">{collection.title}</h1>
+              </div>
+            </div>
+            <div className="flex-none">
+              <FilterList list={sorting} title="Sort by" horizontal />
+            </div>
+          </div>
         </div>
       </div>
-      {products.length === 0 ? (
-        <p className="py-3 text-lg">{`No products found in this collection`}</p>
-      ) : (
-        <>
-          <Grid className="grid-cols-2 lg:grid-cols-6">
-            <ProductGridItems products={products} />
-          </Grid>
-          <Pagination page={page} totalPages={totalPages} />
-        </>
-      )}
-    </div>
+
+      {/* Products section */}
+      <div className="mx-auto max-w-(--breakpoint-2xl) px-4 pb-4">
+        {products.length === 0 ? (
+          <p className="py-3 text-lg">{`No products found in this collection`}</p>
+        ) : (
+          <>
+            <Grid className="mt-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
+              <ProductGridItems products={products} />
+            </Grid>
+            <Pagination page={page} totalPages={totalPages} />
+          </>
+        )}
+      </div>
+    </>
   );
 }
+

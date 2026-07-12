@@ -51,19 +51,6 @@ export default async function BrandPage(props: {
   const pageParam = searchParams?.page;
   const page = typeof pageParam === "string" ? parseInt(pageParam, 10) || 1 : 1;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
       const brand = await getBrandBySlug(params.slug);
   if (!brand) notFound();
 
@@ -72,28 +59,43 @@ export default async function BrandPage(props: {
     getProducts({ brand: params.slug, category, sort, limit: 12, page }),
   ]);
 
-  return (
-    <div className="mx-auto max-w-(--breakpoint-2xl) px-4 pb-4 text-black dark:text-white">
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: brand.name }]} />
-
-      <div className="mb-6 flex items-end gap-2 border-b border-neutral-100 pb-4 sm:gap-3">
-        <BrandCollections collections={collections} />
-        <div className="min-w-0 flex-1 sm:ml-auto sm:flex-none">
-          <FilterList list={sorting} title="Sort by" horizontal />
+    return (
+    <>
+      {/* Toolbar section with subtle background - compact version */}
+      <div className="bg-gradient-to-b from-neutral-100/70 to-neutral-50 border-b border-neutral-200">
+        <div className="mx-auto max-w-(--breakpoint-2xl) px-4 py-1.5 sm:py-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="sm:hidden">
+                <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: brand.name }]} titleOnMobile />
+              </div>
+              <div className="hidden items-center gap-3 sm:flex">
+                <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: brand.name }]} />
+                <h1 className="truncate text-lg font-bold sm:text-2xl">{brand.name}</h1>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <BrandCollections collections={collections} />
+              <FilterList list={sorting} title="Sort by" horizontal />
+            </div>
+          </div>
         </div>
       </div>
-      {products.length > 0 ? (
-        <>
-          <Grid className="grid-cols-2 lg:grid-cols-6">
 
-
-            <ProductGridItems products={products} />
-          </Grid>
-          <Pagination page={page} totalPages={totalPages} />
-        </>
-      ) : (
-        <p className="text-neutral-500">No products found for this brand.</p>
-      )}
-    </div>
+      {/* Products section */}
+      <div className="mx-auto max-w-(--breakpoint-2xl) px-4 pb-4">
+        {products.length > 0 ? (
+          <>
+            <Grid className="mt-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
+              <ProductGridItems products={products} />
+            </Grid>
+            <Pagination page={page} totalPages={totalPages} />
+          </>
+        ) : (
+          <p className="mt-4 text-neutral-500">No products found for this brand.</p>
+        )}
+      </div>
+    </>
   );
 }
+
