@@ -2,11 +2,11 @@
 
 import OrderStatusBadge from "@/components/admin/order-status-badge";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Check, Copy } from "lucide-react";
@@ -107,10 +107,10 @@ export default function OrderDetailPage() {
 
   if (!order) return <div>Order not found</div>;
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{order.orderNumber}</h1>
+    return (
+    <div className="space-y-6 overflow-x-hidden">
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="min-w-0 truncate text-2xl font-bold">{order.orderNumber}</h1>
         <OrderStatusBadge status={order.status} />
       </div>
 
@@ -173,60 +173,95 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
+            <div className="grid min-w-0 gap-6 lg:grid-cols-3">
+        <div className="min-w-0 lg:col-span-2 space-y-6">
+                    <div className="min-w-0 rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
             <h2 className="mb-4 text-lg font-semibold">Items</h2>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b dark:border-neutral-700">
-                  <th className="pb-2 text-left">Product</th>
-                  <th className="pb-2 text-left">Variant</th>
-                  <th className="pb-2 text-left">SKU</th>
-                  <th className="pb-2 text-left">Qty</th>
-                  <th className="pb-2 text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {order.items.map((item: any, i: number) => (
-                  <tr key={i} className="border-b dark:border-neutral-800">
-                    <td className="py-3">
-                      <div className="flex items-center gap-3">
-                        {item.image && (
-                          <img src={item.image} alt="" className="h-10 w-10 rounded object-cover" />
-                        )}
-                        <span className="line-clamp-2">{item.name}</span>
-                      </div>
-                    </td>
-                    <td className="py-3">{item.variantId || "—"}</td>
-                    <td className="py-3">{item.sku || "—"}</td>
-                    <td className="py-3">{item.quantity}</td>
-                    <td className="py-3 text-right font-medium">
-                      KES {(item.quantity * item.price).toFixed(2)}
-                    </td>
+            {/* Desktop table */}
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b dark:border-neutral-700">
+                    <th className="pb-2 pr-3 text-left">Product</th>
+                    <th className="pb-2 pr-3 text-left">Variant</th>
+                    <th className="pb-2 pr-3 text-left">SKU</th>
+                    <th className="pb-2 pr-3 text-left">Qty</th>
+                    <th className="pb-2 text-right">Total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {order.items.map((item: any, i: number) => (
+                    <tr key={i} className="border-b dark:border-neutral-800">
+                      <td className="py-3 pr-3">
+                        <div className="flex items-center gap-3">
+                          {item.image && (
+                            <img src={item.image} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />
+                          )}
+                          <span className="line-clamp-2">{item.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 pr-3">{item.variantId || "—"}</td>
+                      <td className="py-3 pr-3">{item.sku || "—"}</td>
+                      <td className="py-3 pr-3">{item.quantity}</td>
+                      <td className="py-3 text-right font-medium">
+                        KES {(item.quantity * item.price).toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Mobile stacked cards */}
+            <div className="space-y-3 md:hidden">
+              {order.items.map((item: any, i: number) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 border-b border-neutral-100 pb-3 last:border-b-0 last:pb-0 dark:border-neutral-800"
+                >
+                  {item.image && (
+                    <img src={item.image} alt="" className="h-12 w-12 shrink-0 rounded object-cover" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium leading-snug">{item.name}</p>
+                    <p className="mt-0.5 break-words text-xs text-neutral-500">
+                      {[
+                        item.variantId && `Variant: ${item.variantId}`,
+                        item.sku && `SKU: ${item.sku}`,
+                      ]
+                        .filter(Boolean)
+                        .join(" • ")}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-sm font-semibold">
+                      KES {(item.quantity * item.price).toFixed(2)}
+                    </p>
+                    <p className="text-xs text-neutral-500">Qty: {item.quantity}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
+                    <div className="min-w-0 rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
             <h2 className="mb-4 text-lg font-semibold">Status Timeline</h2>
             <div className="space-y-4">
               {(order.statusHistory || []).map((entry: any, i: number) => (
                 <div key={i} className="flex gap-4">
                   <div className="flex flex-col items-center">
-                    <div className="h-3 w-3 rounded-full bg-blue-500" />
+                    <div className="h-3 w-3 shrink-0 rounded-full bg-blue-500" />
                     {i < (order.statusHistory || []).length - 1 && (
-                      <div className="mt-1 h-full w-0.5 bg-neutral-200 dark:bg-neutral-700" />
+                      <div className="mt-1 w-0.5 flex-1 bg-neutral-200 dark:bg-neutral-700" />
                     )}
                   </div>
-                  <div className="pb-4">
+                  <div className="min-w-0 pb-4">
                     <p className="font-medium capitalize">{entry.status}</p>
                     <p className="text-xs text-neutral-500">
                       {new Date(entry.changedAt).toLocaleString()}
                     </p>
-                    {entry.note && <p className="mt-1 text-sm text-neutral-600">{entry.note}</p>}
+                    {entry.note && (
+                      <p className="mt-1 break-words text-sm text-neutral-600">{entry.note}</p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -238,7 +273,7 @@ export default function OrderDetailPage() {
 
         </div>
 
-        <div className="space-y-6">
+                <div className="min-w-0 space-y-6">
           <div className="hidden rounded-lg border border-neutral-200 bg-white p-4 lg:block dark:border-neutral-700 dark:bg-neutral-900">
             <h2 className="mb-3 text-lg font-semibold">Delivery Details</h2>
             <div className="space-y-1 text-sm">
@@ -277,20 +312,20 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
+                    <div className="min-w-0 rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
             <h2 className="mb-4 text-lg font-semibold">Order Summary</h2>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-neutral-500">Subtotal</span>
-                <span>KES {order.subtotal}</span>
+                <span className="shrink-0">KES {order.subtotal}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-neutral-500">Delivery Cost</span>
-                <span>KES {order.shippingCost}</span>
+                <span className="shrink-0">KES {order.shippingCost}</span>
               </div>
-              <div className="flex justify-between border-t border-neutral-200 pt-2 dark:border-neutral-700">
+              <div className="flex items-center justify-between gap-2 border-t border-neutral-200 pt-2 dark:border-neutral-700">
                 <span className="font-medium">Total</span>
-                <span className="font-bold">KES {order.total}</span>
+                <span className="shrink-0 font-bold">KES {order.total}</span>
               </div>
             </div>
             <div className="mt-4 space-y-3">
