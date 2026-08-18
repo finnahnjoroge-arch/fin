@@ -1,5 +1,6 @@
 "use client";
 
+import { getCloudinaryUrl } from "lib/utils";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -7,6 +8,16 @@ type HeroBannerCarouselProps = {
   images: string[];
   interval: 3000 | 5000;
 };
+
+/**
+ * Cloudinary image loader used to generate a responsive `srcSet` from the
+ * `sizes` prop. For Cloudinary URLs it injects width + auto format/quality
+ * transformations, e.g. `w_800,f_auto,q_auto` for mobile and
+ * `w_1400,f_auto,q_auto` for desktop. Non-Cloudinary URLs are returned as-is.
+ */
+function cloudinaryLoader({ src, width }: { src: string; width: number }): string {
+  return getCloudinaryUrl(src, { width });
+}
 
 export function HeroBannerCarousel({ images, interval }: HeroBannerCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -36,7 +47,14 @@ export function HeroBannerCarousel({ images, interval }: HeroBannerCarouselProps
               alt={`Hero banner ${index + 1}`}
               fill
               className="object-cover object-center"
-              sizes="100vw"
+              loader={cloudinaryLoader}
+              // Mobile devices download a smaller rendition (max ~800px wide),
+              // while desktop downloads the full-size (max 1400px) image.
+              sizes="(max-width: 768px) 100vw, 1400px"
+              // The custom Cloudinary loader returns fully-optimized URLs, so we
+              // opt out of the global unoptimized flag for this image to let
+              // Next.js generate the responsive srcSet from the loader + sizes.
+              unoptimized={false}
               quality={100}
               priority={index === 0}
             />
@@ -61,5 +79,4 @@ export function HeroBannerCarousel({ images, interval }: HeroBannerCarouselProps
     </div>
   );
 }
-
 
