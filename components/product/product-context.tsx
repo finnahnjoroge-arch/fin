@@ -102,10 +102,10 @@ export function useUpdateURL() {
       newParams.set(key, value);
     });
 
-    // The image index is applied to the gallery via state but should never be
-    // written to the URL — only variant selection drives the URL.
-    newParams.delete("image");
-
+    // Keep the image parameter in the URL so the gallery's selected image
+    // survives URL-driven re-renders/navigation. Without it, state gets
+    // re-initialized from the URL without an image and the gallery snaps
+    // back to the first/featured image after a variant selection.
     const url = `?${newParams.toString()}`;
     const options = { scroll: false };
 
@@ -116,3 +116,4 @@ export function useUpdateURL() {
     }
   };
 }
+
