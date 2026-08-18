@@ -16,7 +16,7 @@ import { baseUrl } from "lib/utils";
 import Link from "next/link";
 import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function generateMetadata(props: {
   params: Promise<{ handle: string }>;

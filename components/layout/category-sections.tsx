@@ -181,8 +181,7 @@ export default function CategorySections({ categories, initialData }: CategorySe
                           comparePrice={product.comparePrice?.amount}
                           src={product.featuredImage?.url}
                           fill
-                          sizes="(min-width: 1024px) 16vw, (min-width: 640px) 50vw, 100vw"
-                          priority={index < 2}
+                                                    sizes="(min-width: 1024px) 16vw, (min-width: 640px) 50vw, 100vw"
                         />
                       </Link>
                     </Grid.Item>

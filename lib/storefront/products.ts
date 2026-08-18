@@ -6,7 +6,9 @@ import {
   ProductVariant,
   Product as SFCCProduct,
 } from "lib/sfcc/types";
+import { getCloudinaryUrl } from "lib/utils";
 import { ObjectId } from "mongodb";
+import { unstable_cache } from "next/cache";
 
 const CURRENCY_CODE = "KES";
 
@@ -46,8 +48,15 @@ function buildImageAltText(doc: any): string {
   ]);
 }
 
+const PRODUCT_CARD_IMAGE_WIDTH = 800;
+
 function mapImages(images: string[], altText: string): Image[] {
-  return images.map((url) => ({ url, altText, height: 600, width: 600 }));
+  return images.map((url) => ({
+    url: getCloudinaryUrl(url, { width: PRODUCT_CARD_IMAGE_WIDTH }),
+    altText,
+    height: 600,
+    width: PRODUCT_CARD_IMAGE_WIDTH,
+  }));
 }
 
 function deriveOptions(variants: any[]): ProductOption[] {
@@ -175,7 +184,7 @@ export async function getNewArrivals(limit = 8) {
   return getFeaturedProducts(limit);
 }
 
-export async function getProducts(params: {
+async function getProductsFromDB(params: {
   search?: string;
   category?: string;
   brand?: string;
@@ -328,12 +337,39 @@ export async function getProducts(params: {
     total = count;
   }
 
-  return {
+      return {
     products: docs.map(mapProduct),
     total,
     page,
     totalPages: Math.ceil(total / limit),
   };
+}
+
+/**
+ * Cached product query. The cache key is derived from the serialized request
+ * parameters so the homepage's per-category grids (and any listing page) reuse
+ * results instead of hitting MongoDB on every request.
+ */
+export async function getProducts(
+  params: {
+    search?: string;
+    category?: string;
+    brand?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    sort?: string;
+    page?: number;
+    limit?: number;
+    query?: string;
+    sortKey?: string;
+    reverse?: boolean;
+  } = {},
+) {
+  return unstable_cache(
+    async () => getProductsFromDB(params),
+    ["products-query", JSON.stringify(params)],
+    { revalidate: 3600, tags: ["products"] },
+  )();
 }
 
 export async function getAllProductSlugs() {
@@ -345,7 +381,7 @@ export async function getAllProductSlugs() {
   return docs.map((d) => d.slug as string);
 }
 
-export async function getProductBySlug(slug: string) {
+async function getProductBySlugFromDB(slug: string) {
   const db = await connectDB();
   const lookupConditions: any[] = [{ slug }];
   if (ObjectId.isValid(slug)) {
@@ -367,7 +403,7 @@ export async function getProductBySlug(slug: string) {
     if (cats.length > 0) {
       doc.category = cats[0];
     }
-  } else if (doc.category) {
+    } else if (doc.category) {
     const cat = await db
       .collection("categories")
       .findOne({ _id: doc.category });
@@ -376,7 +412,15 @@ export async function getProductBySlug(slug: string) {
   return mapProduct(doc);
 }
 
-export async function getRelatedProducts(
+export async function getProductBySlug(slug: string) {
+  return unstable_cache(
+    () => getProductBySlugFromDB(slug),
+    ["product-by-slug", slug],
+    { revalidate: 3600, tags: ["products"] },
+  )();
+}
+
+async function getRelatedProductsFromDB(
   categoryId: string,
   excludeId: string,
   limit = 10,
@@ -392,12 +436,24 @@ export async function getRelatedProducts(
         { category: new ObjectId(categoryId) },
         { category: categoryId },
       ],
-      _id: { $ne: new ObjectId(excludeId) },
+            _id: { $ne: new ObjectId(excludeId) },
     })
     .sort({ _id: -1 })
     .limit(limit)
     .toArray();
   return docs.map(mapProduct);
+}
+
+export async function getRelatedProducts(
+  categoryId: string,
+  excludeId: string,
+  limit = 10,
+) {
+  return unstable_cache(
+    () => getRelatedProductsFromDB(categoryId, excludeId, limit),
+    ["related-products", categoryId, excludeId, String(limit)],
+    { revalidate: 3600, tags: ["products"] },
+  )();
 }
 
 export async function getCollectionProducts({

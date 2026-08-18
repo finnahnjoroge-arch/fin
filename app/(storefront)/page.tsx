@@ -8,7 +8,7 @@ import { getProducts } from "lib/storefront/products";
 import { getStoreSettings } from "lib/storefront/settings";
 import { baseUrl } from "lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function generateMetadata() {
   try {

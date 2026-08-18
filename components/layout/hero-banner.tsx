@@ -1,5 +1,6 @@
 import { HeroBannerCarousel } from "components/layout/hero-banner-carousel";
 import { getStoreSettings } from "lib/storefront/settings";
+import { getCloudinaryUrl } from "lib/utils";
 import Link from "next/link";
 
 export async function HeroBanner() {
@@ -12,12 +13,15 @@ export async function HeroBanner() {
   const bgColor = settings.heroBgColor || "#f5f5dc";
   const primaryColor = settings.primaryColor || "#2563eb";
 
-  if (settings.heroMode === "image") {
-    const images = settings.heroImageUrls.length
+    if (settings.heroMode === "image") {
+    const rawImages = settings.heroImageUrls.length
       ? settings.heroImageUrls
       : settings.heroImageUrl
         ? [settings.heroImageUrl]
         : [];
+    const images = rawImages.map((url) =>
+      getCloudinaryUrl(url, { width: 1200 }),
+    );
 
     if (!images.length) return null;
 

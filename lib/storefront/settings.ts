@@ -1,4 +1,5 @@
 import { connectDB } from "@/lib/mongodb";
+import { unstable_cache } from "next/cache";
 
 export type ScriptLocation = "head" | "body_start" | "body_end";
 export type ScriptType = "js" | "css" | "html";
@@ -200,7 +201,7 @@ function migrateOldScripts(settings: any): ScriptSnippet[] {
   return normalizeScripts(scripts);
 }
 
-export async function getStoreSettings(): Promise<typeof defaultSettings> {
+async function getStoreSettingsFromDB(): Promise<typeof defaultSettings> {
   const db = await connectDB();
   const raw = await db.collection("settings").findOne({ storeId: "default" });
   if (!raw) return defaultSettings;
@@ -245,5 +246,13 @@ export async function getStoreSettings(): Promise<typeof defaultSettings> {
     );
   }
 
-  return settings;
+        return settings;
 }
+
+const CACHE_REVALIDATE_SECONDS = 3600;
+
+export const getStoreSettings = unstable_cache(
+  getStoreSettingsFromDB,
+  ["store-settings"],
+  { revalidate: CACHE_REVALIDATE_SECONDS, tags: ["store-settings"] },
+);

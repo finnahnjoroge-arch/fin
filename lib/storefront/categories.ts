@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import { Collection, SEO } from "lib/sfcc/types";
+import { unstable_cache } from "next/cache";
 
 function mapCategory(doc: any): Collection {
   const seo: SEO = { title: doc.name, description: doc.description || "" };
@@ -17,7 +18,7 @@ function mapCategory(doc: any): Collection {
   };
 }
 
-export async function getAllCategories() {
+async function getAllCategoriesFromDB() {
   const db = await connectDB();
 
   // Aggregate so we can include children for each category
@@ -33,8 +34,14 @@ export async function getAllCategories() {
     },
   ]).toArray();
 
-  return docs.map(mapCategory);
+      return docs.map(mapCategory);
 }
+
+export const getAllCategories = unstable_cache(
+  getAllCategoriesFromDB,
+  ["all-categories"],
+  { revalidate: 3600, tags: ["categories", "all-categories"] },
+);
 
 export async function getCategoryBySlug(slug: string) {
   const db = await connectDB();
