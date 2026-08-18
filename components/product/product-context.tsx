@@ -96,11 +96,15 @@ export function useProduct() {
 export function useUpdateURL() {
   const router = useRouter();
 
-  return (state: ProductState, useReplace = true) => {
+    return (state: ProductState, useReplace = true) => {
     const newParams = new URLSearchParams(window.location.search);
     Object.entries(state).forEach(([key, value]) => {
       newParams.set(key, value);
     });
+
+    // The image index is applied to the gallery via state but should never be
+    // written to the URL — only variant selection drives the URL.
+    newParams.delete("image");
 
     const url = `?${newParams.toString()}`;
     const options = { scroll: false };

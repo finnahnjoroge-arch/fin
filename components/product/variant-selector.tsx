@@ -147,16 +147,17 @@ export function VariantSelector({
                 disabled={!isAvailableForSale}
                 title={`${option.name} ${value.name}${!isAvailableForSale ? " (Out of Stock)" : ""}`}
                 className={clsx(
-                  "flex items-center justify-center rounded-full border bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-900 md:min-w-[40px] md:px-2.5 md:py-1.5 md:text-sm",
+                  "flex items-center justify-center gap-1 rounded-full border px-2 py-1 text-xs font-medium transition-all duration-300 ease-in-out md:min-w-[40px] md:px-2.5 md:py-1.5 md:text-sm",
                   option.values.length <= 4 ? "flex-1" : "min-w-max shrink-0 snap-start",
                   {
-                    "border-blue-600 ring-2 ring-blue-600 bg-white": isActive,
-                    "border-neutral-200 transition duration-300 ease-in-out hover:border-blue-600 hover:bg-white": !isActive && isAvailableForSale,
+                    "border-neutral-900 bg-neutral-900 text-white shadow-md": isActive,
+                    "border-neutral-200 text-neutral-900 hover:border-neutral-900 hover:bg-neutral-50": !isActive && isAvailableForSale,
                     "cursor-not-allowed border-neutral-200 bg-neutral-100 text-neutral-400 line-through": !isAvailableForSale,
                   },
                 )}
               >
                 {value.name}
+                {isActive && <span aria-hidden="true">✓</span>}
               </button>
             );
           })}
