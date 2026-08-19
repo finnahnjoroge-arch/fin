@@ -25,6 +25,7 @@ function CategoryArtwork({ category, preferImage = true }: { category: Category;
             alt={category.title}
             width={220}
             height={220}
+            loading="lazy"
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>
@@ -58,6 +59,7 @@ function CategoryArtwork({ category, preferImage = true }: { category: Category;
           alt={category.title}
           width={220}
           height={220}
+          loading="lazy"
           className="h-full w-full object-cover"
         />
       </div>
@@ -147,7 +149,7 @@ export function CategoryCircles({ categories }: { categories: Category[] }) {
           <div
             ref={scrollContainerRef}
             onScroll={checkScroll}
-            className="scrollbar-hide flex w-full gap-0 overflow-x-auto overflow-y-visible px-0 pb-0 pt-1 sm:gap-1 md:justify-center md:gap-2 md:px-1 md:pt-2 lg:px-10"
+            className="scrollbar-hide flex w-full gap-0 overflow-x-auto overflow-y-visible px-0 pb-0 pt-1 sm:gap-1 md:gap-2 md:px-1 md:pt-2 lg:px-10"
             style={{ scrollBehavior: "smooth", scrollSnapType: "x mandatory" }}
           >
             {visibleCategories.map((category, index) => (

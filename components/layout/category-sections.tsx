@@ -79,7 +79,7 @@ export default function CategorySections({ categories, initialData }: CategorySe
                   ) : cat.image ? (
                     // Only image is available: show a small favicon fallback in the header (first column)
                     <div className="flex-shrink-0">
-                      <Image src="/favicon.ico" alt={cat.name} width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
+                      <Image src="/favicon.ico" alt={cat.name} width={40} height={40} loading="lazy" className="h-10 w-10 rounded-full object-cover" />
                     </div>
                   ) : null}
                   <div className="relative group">
@@ -181,6 +181,7 @@ export default function CategorySections({ categories, initialData }: CategorySe
                           comparePrice={product.comparePrice?.amount}
                           src={product.featuredImage?.url}
                           fill
+                          loading="lazy"
                                                     sizes="(min-width: 1024px) 16vw, (min-width: 640px) 50vw, 100vw"
                         />
                       </Link>

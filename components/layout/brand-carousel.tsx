@@ -76,6 +76,7 @@ export function BrandCarousel({ brands }: { brands: any[] }) {
                         fill={false}
                         width={120}
                         height={60}
+                        loading="lazy"
                         className="max-h-full w-auto max-w-full object-contain"
                         sizes="152px"
                         unoptimized
