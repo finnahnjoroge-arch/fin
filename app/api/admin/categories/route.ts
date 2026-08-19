@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 const slugify = (str: string) =>
@@ -86,8 +87,15 @@ export async function POST(req: NextRequest) {
     const now = new Date();
     const toInsert = { ...body, createdAt: now, updatedAt: now };
     const result = await db.collection("categories").insertOne(toInsert);
+
+    // Categories render on the homepage — clear its cache immediately.
+    revalidatePath("/");
+    revalidateTag("categories");
+    revalidateTag("all-categories");
+
     return NextResponse.json({ ...toInsert, _id: result.insertedId }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

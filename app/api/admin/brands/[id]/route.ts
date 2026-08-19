@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 const slugify = (str: string) =>
@@ -26,6 +27,12 @@ export async function PUT(
       { returnDocument: "after" }
     );
     if (!brand) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    // Brands render on the homepage — clear its cache immediately.
+    revalidatePath("/");
+    revalidateTag("brands");
+    revalidateTag("all-brands");
+
     return NextResponse.json(brand);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -46,6 +53,9 @@ export async function DELETE(
 
     if (permanent || existing.deletedAt) {
       await db.collection("brands").deleteOne({ _id: new ObjectId(id) });
+      revalidatePath("/");
+      revalidateTag("brands");
+      revalidateTag("all-brands");
       return NextResponse.json({ message: "Brand permanently deleted" });
     }
 
@@ -53,8 +63,12 @@ export async function DELETE(
       { _id: new ObjectId(id) },
       { $set: { deletedAt: new Date(), updatedAt: new Date() } }
     );
+    revalidatePath("/");
+    revalidateTag("brands");
+    revalidateTag("all-brands");
     return NextResponse.json({ message: "Brand moved to trash" });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

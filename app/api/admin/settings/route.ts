@@ -1,4 +1,5 @@
 import { connectDB } from "@/lib/mongodb";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 const defaultSettings = {
@@ -79,6 +80,13 @@ export async function PUT(req: NextRequest) {
         { $set: { ...data, updatedAt: new Date() } },
         { upsert: true, returnDocument: "after" },
       );
+
+    // Banner/homepage content (announcement bar, hero banner, etc.) has
+    // changed — clear the homepage cache immediately so the storefront
+    // reflects the latest settings.
+    revalidatePath("/");
+    revalidateTag("store-settings");
+
     return NextResponse.json(settings);
   } catch (error) {
     console.error("Settings PUT error:", error);
@@ -88,3 +96,4 @@ export async function PUT(req: NextRequest) {
     );
   }
 }
+

@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 const slugify = (str: string) =>
@@ -36,6 +37,12 @@ export async function PUT(
       { returnDocument: "after" }
     );
     if (!category) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    // Categories render on the homepage — clear its cache immediately.
+    revalidatePath("/");
+    revalidateTag("categories");
+    revalidateTag("all-categories");
+
     return NextResponse.json(category);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -60,6 +67,9 @@ export async function DELETE(
         return NextResponse.json({ error: "Cannot delete category with products" }, { status: 400 });
       }
       await db.collection("categories").deleteOne({ _id: new ObjectId(id) });
+      revalidatePath("/");
+      revalidateTag("categories");
+      revalidateTag("all-categories");
       return NextResponse.json({ message: "Category permanently deleted" });
     }
 
@@ -67,8 +77,13 @@ export async function DELETE(
       { _id: new ObjectId(id) },
       { $set: { deletedAt: new Date(), updatedAt: new Date() } }
     );
+    revalidatePath("/");
+    revalidateTag("categories");
+    revalidateTag("all-categories");
     return NextResponse.json({ message: "Category moved to trash" });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+

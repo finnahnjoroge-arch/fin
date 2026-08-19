@@ -67,29 +67,33 @@ export default function ProductGridItems({
           </>
         );
 
-        return (
+                return (
           <Grid.Item key={product.handle} className="animate-fadeIn h-full">
-            <Link
-              href={`/product/${product.handle}`}
-              prefetch={true}
-              className="block h-full"
-            >
-              <GridTileImage
-                alt={product.title}
-                label={{
-                  title: product.title,
-                  amountMin: product.priceRange.minVariantPrice.amount,
-                  amountMax: product.priceRange.maxVariantPrice.amount,
-                  currencyCode: product.currencyCode,
-                }}
-                                labelActions={actionButtons}
-                comparePrice={product.comparePrice?.amount}
-                src={product.featuredImage?.url}
-                fill
-                sizes="(min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
-                priority={index < 2}
-              />
-            </Link>
+            <div className="group flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-xl transition-all duration-300 ease-out hover:-translate-y-1">
+              <Link
+                href={`/product/${product.handle}`}
+                prefetch={true}
+                className="block"
+              >
+                <GridTileImage
+                  alt={product.title}
+                  label={{
+                    title: product.title,
+                    amountMin: product.priceRange.minVariantPrice.amount,
+                    amountMax: product.priceRange.maxVariantPrice.amount,
+                    currencyCode: product.currencyCode,
+                  }}
+                  comparePrice={product.comparePrice?.amount}
+                  src={product.featuredImage?.url}
+                  fill
+                  sizes="(min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  priority={index < 2}
+                />
+              </Link>
+              <div className="mt-auto flex items-stretch divide-x divide-white/30 overflow-hidden border-t border-neutral-100">
+                {actionButtons}
+              </div>
+            </div>
           </Grid.Item>
         );
       })}
