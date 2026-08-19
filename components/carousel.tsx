@@ -22,13 +22,13 @@ export async function Carousel() {
               href={`/product/${product.handle}`}
               className="relative h-full w-full"
             >
-              <GridTileImage
+                            <GridTileImage
                 alt={product.title}
                 label={{
                   title: product.title,
-                  amountMin: product.priceRange.minVariantPrice.amount,
-                  amountMax: product.priceRange.maxVariantPrice.amount,
-                  currencyCode: product.priceRange.minVariantPrice.currencyCode,
+                  amountMin: product.priceRange?.minVariantPrice?.amount || "0",
+                  amountMax: product.priceRange?.maxVariantPrice?.amount || product.priceRange?.minVariantPrice?.amount || "0",
+                  currencyCode: product.priceRange?.minVariantPrice?.currencyCode || product.currencyCode || "KES",
                 }}
                 src={product.featuredImage?.url}
                 fill

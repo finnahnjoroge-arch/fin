@@ -16,14 +16,22 @@ export function Gallery({
   const imageIndex = state.image ? parseInt(state.image) : 0;
   const thumbRef = useRef<HTMLDivElement>(null);
 
-  const nextImageIndex = imageIndex + 1 < images.length ? imageIndex + 1 : 0;
+    // Defensive: tolerate missing/empty image arrays (e.g. products with no media).
+  const safeImages = images || [];
+  const safeImageIndex =
+    !Number.isNaN(imageIndex) && imageIndex >= 0 && imageIndex < safeImages.length
+      ? imageIndex
+      : 0;
+
+  const nextImageIndex =
+    safeImageIndex + 1 < safeImages.length ? safeImageIndex + 1 : 0;
   const previousImageIndex =
-    imageIndex === 0 ? images.length - 1 : imageIndex - 1;
+    safeImageIndex === 0 ? safeImages.length - 1 : safeImageIndex - 1;
 
   const buttonClassName =
     "flex h-full items-center justify-center px-5 text-neutral-700 transition-all ease-in-out hover:scale-110 hover:text-black md:px-6";
 
-  const hasMultipleImages = images.length > 1;
+  const hasMultipleImages = safeImages.length > 1;
 
   return (
     <form className={clsx("flex flex-col lg:grid lg:gap-4", hasMultipleImages ? "lg:grid-cols-[5rem_1fr]" : "lg:grid-cols-[1fr]")}>
@@ -42,8 +50,8 @@ export function Gallery({
             className="scrollbar-hide overflow-x-auto px-3 py-0.5 sm:px-4 lg:mx-0 lg:max-h-[400px] lg:overflow-x-hidden lg:overflow-y-auto lg:px-0 lg:py-1"
           >
             <ul className="flex w-max min-w-full snap-x snap-mandatory items-center justify-center gap-2 lg:w-auto lg:min-w-0 lg:flex-col lg:justify-start lg:gap-3">
-              {images.map((image, index) => {
-                const isActive = index === imageIndex;
+                            {safeImages.map((image, index) => {
+                const isActive = index === safeImageIndex;
 
                 return (
                   <li key={image.src} className="h-12 w-12 flex-none snap-start lg:h-20 lg:w-20">
@@ -85,20 +93,20 @@ export function Gallery({
       ) : null}
 
       <div className={clsx("relative mt-1 aspect-square w-full overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50 md:mt-0 lg:aspect-square lg:max-h-[400px]", hasMultipleImages && "lg:order-2")}>
-        {images[imageIndex] && (
+                {safeImages[safeImageIndex] && (
           <Image
             className="h-full w-full object-cover"
 
             fill
             sizes="(min-width: 1024px) 50vw, 100vw"
-            alt={images[imageIndex]?.altText as string}
-            src={images[imageIndex]?.src as string}
+            alt={safeImages[safeImageIndex]?.altText as string}
+            src={safeImages[safeImageIndex]?.src as string}
             priority={true}
             unoptimized
           />
         )}
 
-        {images.length > 1 ? (
+        {safeImages.length > 1 ? (
           <div className="absolute bottom-3 flex w-full justify-center md:bottom-[15%]">
             <div className="mx-auto flex h-10 items-center rounded-full border border-neutral-200 bg-white/90 text-neutral-900 shadow-lg backdrop-blur-sm md:h-11">
               <button

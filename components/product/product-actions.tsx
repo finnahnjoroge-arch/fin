@@ -17,24 +17,27 @@ export function ProductActions({
   storePhone?: string;
 }) {
   const { variants, availableForSale } = product;
+  // Defensive: tolerate missing/empty variants.
+  const safeVariants = variants || [];
   const { addCartItem } = useCart();
   const { state } = useProduct();
 
-  const variant = variants.find((variant: ProductVariant) =>
-    variant.selectedOptions.every(
+  const variant = safeVariants.find((variant: ProductVariant) =>
+    (variant.selectedOptions || []).every(
       (option) => option.value === state[option.name.toLowerCase()],
     ),
   );
   const defaultVariant = product.defaultVariant
-    ? variants.find((v) => v.title === product.defaultVariant)
-    : variants.length === 1 ? variants[0] : undefined;
+    ? safeVariants.find((v) => v.title === product.defaultVariant)
+    : safeVariants.length === 1 ? safeVariants[0] : undefined;
   const defaultVariantId = defaultVariant?.id;
   const selectedVariantId = variant?.id || defaultVariantId;
-  const finalVariant = variants.find(
+  const finalVariant = safeVariants.find(
     (variant) => variant.id === selectedVariantId,
-  )!;
+  ) || safeVariants[0];
 
   const handleAdd = () => {
+    if (!finalVariant) return;
     addCartItem(finalVariant, product);
   };
 
@@ -54,7 +57,7 @@ export function ProductActions({
     ? `${window.location.origin}/product/${product.handle}${search ? `?${search}` : ""}`
     : `https://finnorah.co.ke/product/${product.handle}`;
 
-  const variantName = finalVariant?.title || finalVariant?.selectedOptions.map((o) => o.value).join(" / ") || "";
+  const variantName = finalVariant?.title || finalVariant?.selectedOptions?.map((o) => o.value).join(" / ") || "";
   const price = finalVariant?.price?.amount
     ? `${product.currencyCode} ${Number(finalVariant.price.amount).toFixed(2)}/=`
     : "";

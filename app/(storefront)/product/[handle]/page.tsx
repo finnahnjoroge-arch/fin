@@ -85,8 +85,19 @@ export default async function ProductPage(props: {
     ]);
     if (!product) return notFound();
 
-    const productUrl = `${baseUrl}/product/${params.handle}`;
-    const variantOffers = product.variants.map((v) => ({
+
+
+
+
+
+
+
+
+
+
+
+        const productUrl = `${baseUrl}/product/${params.handle}`;
+    const variantOffers = (product.variants || []).map((v) => ({
       "@type": "Offer",
       name: v.title,
       price: v.price.amount,
@@ -101,9 +112,12 @@ export default async function ProductPage(props: {
     const productJsonLd = {
       "@context": "https://schema.org",
       "@type": "Product",
-      name: product.title,
+
+
+
+                        name: product.title,
       description: product.description,
-      image: product.featuredImage.url,
+      image: product.featuredImage?.url || product.images?.[0]?.url,
       url: productUrl,
       sku: (product as any).sku,
       brand: {
@@ -116,9 +130,11 @@ export default async function ProductPage(props: {
             availability: product.availableForSale
               ? "https://schema.org/InStock"
               : "https://schema.org/OutOfStock",
-            priceCurrency: product.currencyCode,
-            highPrice: product.priceRange.maxVariantPrice.amount,
-            lowPrice: product.priceRange.minVariantPrice.amount,
+
+
+                                    priceCurrency: product.currencyCode,
+            highPrice: product.priceRange?.maxVariantPrice?.amount,
+            lowPrice: product.priceRange?.minVariantPrice?.amount,
             offerCount: variantOffers.length,
             offers: variantOffers,
           }
@@ -135,11 +151,12 @@ export default async function ProductPage(props: {
       { label: product.title },
     ];
 
+        const safeVariants = product.variants || [];
     const defaultVariant = product.defaultVariant
-      ? product.variants.find((v) => v.title === product.defaultVariant)
-      : product.variants.length === 1 ? product.variants[0] : undefined;
-    const viewContentVariantId = defaultVariant?.id || product.variants[0]?.id || product.id;
-    const viewContentPrice = Number(defaultVariant?.price?.amount || product.variants[0]?.price?.amount || 0);
+      ? safeVariants.find((v) => v.title === product.defaultVariant)
+      : safeVariants.length === 1 ? safeVariants[0] : undefined;
+    const viewContentVariantId = defaultVariant?.id || safeVariants[0]?.id || product.id;
+    const viewContentPrice = Number(defaultVariant?.price?.amount || safeVariants[0]?.price?.amount || 0);
 
     return (
       <div>
@@ -177,8 +194,8 @@ export default async function ProductPage(props: {
                     <div className="relative w-full aspect-[4/3] max-h-[48vw] overflow-hidden rounded-xl bg-neutral-100" />
                   }
                 >
-                  <Gallery
-                    images={product.images.slice(0, 5).map((image: Image) => ({
+                                    <Gallery
+                    images={(product.images || []).slice(0, 5).map((image: Image) => ({
                       src: image.url,
                       altText: image.altText,
                     }))}
@@ -480,7 +497,7 @@ export default async function ProductPage(props: {
                                                                                                                     }
                                                                                                                   >
                                                                                                                     <Gallery
-                                                                                                                      images={product.images.slice(0, 5).map((image: Image) => ({
+                                                                                                                      images={(product.images || []).slice(0, 5).map((image: Image) => ({
                                                                                                                         src: image.url,
                                                                                                                         altText: image.altText,
                                                                                                                       }))}
