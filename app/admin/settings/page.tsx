@@ -780,30 +780,9 @@ export default function SettingsPage() {
                         keep important text away from the edges.
                       </p>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Auto-scroll speed</Label>
-                      <div className="flex gap-2">
-                        {[3000, 5000].map((interval) => (
-                          <button
-                            key={interval}
-                            type="button"
-                            onClick={() =>
-                              updateField("heroAutoplayInterval", interval)
-                            }
-                            className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
-                              settings.heroAutoplayInterval === interval
-                                ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-black"
-                                : "border-neutral-200 hover:border-neutral-400 dark:border-neutral-700 dark:hover:border-neutral-500"
-                            }`}
-                          >
-                            {interval / 1000}s
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    {settings.heroImageUrls.length > 0 ? (
+                                        {settings.heroImageUrls.length > 0 ? (
                       <div className="space-y-3">
-                        {settings.heroImageUrls.map((url, index) => (
+                        {settings.heroImageUrls.slice(0, 1).map((url, index) => (
                           <div
                             key={`${url}-${index}`}
                             className="relative aspect-[4/1] w-full overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900"
@@ -814,7 +793,7 @@ export default function SettingsPage() {
                               className="h-full w-full object-contain"
                             />
                             <div className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
-                              Banner {index + 1}
+                              Banner
                             </div>
                             <button
                               type="button"
@@ -835,41 +814,27 @@ export default function SettingsPage() {
                     ) : null}
                     <Input
                       type="file"
-                      multiple
                       accept="image/*"
                       disabled={uploadingHero}
                       onChange={async (e) => {
-                        const files = Array.from(
-                          e.target.files || [],
-                        ) as File[];
-                        if (!files.length) return;
+                        const file = e.target.files?.[0];
+                        if (!file) return;
                         setUploadingHero(true);
                         try {
-                          const uploadedUrls: string[] = [];
-                          for (const file of files) {
-                            const form = new FormData();
-                            form.append("file", file);
-                            const res = await fetch("/api/admin/upload", {
-                              method: "POST",
-                              body: form,
-                            });
-                            const data = await res.json();
-                            if (data.url) {
-                              uploadedUrls.push(data.url);
-                            } else {
-                              toast.error(data.error || "Upload failed");
-                            }
+                          const form = new FormData();
+                          form.append("file", file);
+                          const res = await fetch("/api/admin/upload", {
+                            method: "POST",
+                            body: form,
+                          });
+                          const data = await res.json();
+                          if (data.url) {
+                            updateField("heroImageUrls", [data.url]);
+                            updateField("heroImageUrl", data.url);
+                            toast.success("Hero image uploaded");
+                          } else {
+                            toast.error(data.error || "Upload failed");
                           }
-                          const next = [
-                            ...settings.heroImageUrls,
-                            ...uploadedUrls,
-                          ];
-                          updateField("heroImageUrls", next);
-                          updateField("heroImageUrl", next[0] || "");
-                          if (uploadedUrls.length)
-                            toast.success(
-                              `${uploadedUrls.length} banner(s) uploaded`,
-                            );
                         } catch {
                           toast.error("Upload failed");
                         } finally {
