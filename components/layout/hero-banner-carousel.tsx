@@ -12,11 +12,13 @@ type HeroBannerCarouselProps = {
 /**
  * Cloudinary image loader used to generate a responsive `srcSet` from the
  * `sizes` prop. For Cloudinary URLs it injects width + auto format/quality
- * transformations, e.g. `w_800,f_auto,q_auto` for mobile and
- * `w_1400,f_auto,q_auto` for desktop. Non-Cloudinary URLs are returned as-is.
+ * transformations. The requested width is clamped to two responsive targets:
+ * `w_800,f_auto,q_auto` for small viewports and `w_1400,f_auto,q_auto` for
+ * larger ones. Non-Cloudinary URLs are returned as-is.
  */
 function cloudinaryLoader({ src, width }: { src: string; width: number }): string {
-  return getCloudinaryUrl(src, { width });
+  const responsiveWidth = width <= 800 ? 800 : 1400;
+  return getCloudinaryUrl(src, { width: responsiveWidth });
 }
 
 export function HeroBannerCarousel({ images, interval }: HeroBannerCarouselProps) {
@@ -57,6 +59,7 @@ export function HeroBannerCarousel({ images, interval }: HeroBannerCarouselProps
               unoptimized={false}
               quality={100}
               priority={index === 0}
+              fetchPriority={index === 0 ? "high" : "auto"}
             />
           </div>
         ))}

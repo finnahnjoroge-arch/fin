@@ -1,13 +1,10 @@
-import { BrandCarousel } from "components/layout/brand-carousel";
-import { CategoryCircles } from "components/layout/category-circles";
-import CategorySections from "components/layout/category-sections";
 import { HeroSection } from "components/layout/hero-section";
+import { HomepageLazySections } from "components/layout/homepage-lazy-sections";
 import { getBrands } from "lib/storefront/brands";
 import { getAllCategories } from "lib/storefront/categories";
 import { getProducts } from "lib/storefront/products";
 import { getStoreSettings } from "lib/storefront/settings";
 import { baseUrl } from "lib/utils";
-
 export const revalidate = 3600;
 
 export async function generateMetadata() {
@@ -99,13 +96,17 @@ export default async function HomePage() {
   return (
     <>
       <HeroSection categories={categorySummaries} />
-      <CategoryCircles categories={categorySummaries} />
-      <CategorySections
-
-        categories={categoriesWithProducts.map((c) => ({ slug: c.handle, name: c.title, description: c.description }))}
+      <HomepageLazySections
+        categories={categorySummaries}
+        sections={categoriesWithProducts.map((c) => ({
+          slug: c.handle,
+          name: c.title,
+          description: c.description,
+        }))}
         initialData={initialData}
+        brands={brands}
       />
-      {brands.length > 0 && <BrandCarousel brands={brands} />}
     </>
   );
 }
+
