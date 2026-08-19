@@ -1,5 +1,6 @@
 import { HeroBannerCarousel } from "components/layout/hero-banner-carousel";
 import { getStoreSettings } from "lib/storefront/settings";
+import { getCloudinaryUrl } from "lib/utils";
 import Link from "next/link";
 
 export async function HeroBanner() {
@@ -18,11 +19,12 @@ export async function HeroBanner() {
       : settings.heroImageUrl
         ? [settings.heroImageUrl]
         : [];
-    // Pass the raw Cloudinary URLs through to the carousel. The carousel
-    // applies responsive width/format/quality transformations via its
-    // Image loader so mobile downloads a smaller (w_800) rendition and
-    // desktop downloads the larger (w_1400) one.
-    const images = rawImages;
+    // Pre-optimize the Cloudinary URLs here (f_auto, q_auto, w_1200) and serve
+    // them directly. This site runs unoptimized on the edge (OpenNext/
+    // Cloudflare, no Next image optimizer), so transforming the URL server-side
+    // is the only reliable way to get a lean LCP image. Previously "forcing"
+    // the optimizer via unoptimized={false} tanked LCP scores.
+    const images = rawImages.map((url) => getCloudinaryUrl(url, { width: 1200 }));
     if (!images.length) return null;
 
     const img = <HeroBannerCarousel images={images} interval={settings.heroAutoplayInterval as 3000 | 5000} />;

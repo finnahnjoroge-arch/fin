@@ -1,6 +1,5 @@
 "use client";
 
-import { getCloudinaryUrl } from "lib/utils";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -8,18 +7,6 @@ type HeroBannerCarouselProps = {
   images: string[];
   interval: 3000 | 5000;
 };
-
-/**
- * Cloudinary image loader used to generate a responsive `srcSet` from the
- * `sizes` prop. For Cloudinary URLs it injects width + auto format/quality
- * transformations. The requested width is clamped to two responsive targets:
- * `w_800,f_auto,q_auto` for small viewports and `w_1400,f_auto,q_auto` for
- * larger ones. Non-Cloudinary URLs are returned as-is.
- */
-function cloudinaryLoader({ src, width }: { src: string; width: number }): string {
-  const responsiveWidth = width <= 800 ? 800 : 1400;
-  return getCloudinaryUrl(src, { width: responsiveWidth });
-}
 
 export function HeroBannerCarousel({ images, interval }: HeroBannerCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -44,22 +31,18 @@ export function HeroBannerCarousel({ images, interval }: HeroBannerCarouselProps
       >
         {images.map((src, index) => (
           <div key={`${src}-${index}`} className="relative h-full w-full shrink-0">
+            {/* The URL is already Cloudinary-optimized server-side (width +
+                f_auto + q_auto). This site runs unoptimized on the edge
+                (OpenNext/Cloudflare) without a Next image optimizer, so the
+                Cloudinary URL is served directly. Only the visible slide is
+                eagerly loaded; the rest are lazy/priority-less. */}
             <Image
               src={src}
               alt={`Hero banner ${index + 1}`}
               fill
               className="object-cover object-center"
-              loader={cloudinaryLoader}
-              // Mobile devices download a smaller rendition (max ~800px wide),
-              // while desktop downloads the full-size (max 1400px) image.
-              sizes="(max-width: 768px) 100vw, 1400px"
-              // The custom Cloudinary loader returns fully-optimized URLs, so we
-              // opt out of the global unoptimized flag for this image to let
-              // Next.js generate the responsive srcSet from the loader + sizes.
-              unoptimized={false}
-              quality={100}
+              unoptimized
               priority={index === 0}
-              fetchPriority={index === 0 ? "high" : "auto"}
             />
           </div>
         ))}
