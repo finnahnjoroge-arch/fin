@@ -124,9 +124,11 @@ export default function CategorySections({ categories, initialData }: CategorySe
                     const firstVariant = product.variants?.[0];
                     const available = product.availableForSale && !!firstVariant;
                     const cleanPhone = whatsappPhone?.replace(/\D/g, "") || "";
-                    const productUrl = typeof window !== "undefined"
+                                        const productUrl = typeof window !== "undefined"
                       ? `${window.location.origin}/product/${product.handle}`
                       : "";
+                    // First 4 product images in the first (top) section should load eagerly on mobile
+                    const priorityImage = sectionIndex === 0 && index < 4;
 
                                         const actionButtons = (
                       <>
@@ -179,9 +181,9 @@ export default function CategorySections({ categories, initialData }: CategorySe
                           }}
                                                     labelActions={actionButtons}
                           comparePrice={product.comparePrice?.amount}
-                          src={product.featuredImage?.url}
+                                                    src={product.featuredImage?.url}
                           fill
-                          loading="lazy"
+                          {...(priorityImage ? { priority: true } : { loading: "lazy" })}
                                                     sizes="(min-width: 1024px) 16vw, (min-width: 640px) 50vw, 100vw"
                         />
                       </Link>
