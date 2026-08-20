@@ -18,9 +18,22 @@ declare global {
 
 let clientPromise: Promise<MongoClient>;
 
+async function connectWithRetry(client: MongoClient, retries = 3, delay = 1000): Promise<MongoClient> {
+  let attempt = 0;
+  while (attempt < retries) {
+    try {
+      return await client.connect();
+    } catch (error) {
+      attempt++;
+      if (attempt >= retries) throw error;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error("Failed to connect to MongoDB");
+}
 if (!global._mongoClientPromise) {
   const client = new MongoClient(MONGODB_URI, options);
-  global._mongoClientPromise = client.connect();
+  global._mongoClientPromise = connectWithRetry(client);
 }
 clientPromise = global._mongoClientPromise;
 
