@@ -5,7 +5,22 @@ import { NextRequest, NextResponse } from "next/server";
 // ===== Spam/abuse protections =====
 
 // 1) Common spam name blacklist (compared case-insensitively after trimming)
-const SPAM_NAMES = new Set(["john smith", "test user", "john doe"]);
+const SPAM_NAMES = new Set([
+  "john smith",
+  "test user",
+  "john doe",
+  "john smith 002",
+  "jane doe",
+  "test test",
+]);
+
+// 1b) Known disposable/bot email domain blacklist (compared case-insensitively)
+const SPAM_EMAIL_DOMAINS = new Set([
+  "storebotmail.joonix.net",
+  "mailinator.com",
+  "tempmail.com",
+  "guerrillamail.com",
+]);
 
 // 2) Kenyan phone validation: must start with 07, 01, or +254 (then 8 digits)
 const KENYAN_PHONE_RE = /^(\+?254|0)([17])\d{8}$/;
@@ -73,18 +88,40 @@ export async function POST(req: NextRequest) {
     }
 
         // ---- 2) Kenyan phone validation ----
-    const normalizedPhone = String(phone || "").replace(/[\s\-()]/g, "");
-    if (!KENYAN_PHONE_RE.test(normalizedPhone)) {
-      return NextResponse.json(
-        {
-          error:
-            "Invalid phone number. Please enter a valid Kenyan number (e.g. 07XXXXXXXX, 01XXXXXXXX, or +2547XXXXXXXX).",
-        },
-        { status: 400 }
-      );
-    }
+        const normalizedPhone = String(phone || "").replace(/[\s\-()]/g, "");
+        if (!KENYAN_PHONE_RE.test(normalizedPhone)) {
+          return NextResponse.json(
+            {
+              error:
+                "Invalid phone number. Please enter a valid Kenyan number (e.g. 07XXXXXXXX, 01XXXXXXXX, or +2547XXXXXXXX).",
+            },
+            { status: 400 }
+          );
+        }
 
-    // ---- 3) Rate limit by IP ----
+        // ---- 2b) Bot email domain blacklist ----
+        if (email) {
+          const emailDomain = String(email).split("@").pop()?.trim().toLowerCase() || "";
+          if (SPAM_EMAIL_DOMAINS.has(emailDomain)) {
+            return NextResponse.json(
+              { error: "The provided email address is not accepted." },
+              { status: 400 }
+            );
+          }
+        }
+
+        // ---- 2c) Non-Kenyan address block ----
+        if (country) {
+          const normalizedCountry = String(country).trim();
+          if (normalizedCountry !== "Kenya" && normalizedCountry !== "KE") {
+            return NextResponse.json(
+              { error: "Orders are only accepted within Kenya." },
+              { status: 400 }
+            );
+          }
+        }
+
+        // ---- 3) Rate limit by IP ----
     // Check the limit before creating the order, but only record the order
     // after it is successfully persisted (see below).
     const clientIp = getClientIp(req);
