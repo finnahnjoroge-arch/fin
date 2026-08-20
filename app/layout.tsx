@@ -1,8 +1,7 @@
 import { Providers } from "@/components/providers";
-import { GeistSans } from "geist/font/sans";
 import { getStoreSettings } from "lib/storefront/settings";
 import { baseUrl } from "lib/utils";
-import { Playfair_Display } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import { ReactNode } from "react";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -14,6 +13,12 @@ export const viewport = {
   initialScale: 1,
   viewportFit: "cover",
 };
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -88,7 +93,7 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${playfair.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
       <body className="bg-gray-100 text-black selection:bg-teal-300">
         <Providers>
           {children}

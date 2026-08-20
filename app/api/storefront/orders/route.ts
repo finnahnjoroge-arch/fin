@@ -2,6 +2,51 @@ import { connectDB } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
+// ===== Spam/abuse protections =====
+
+// 1) Common spam name blacklist (compared case-insensitively after trimming)
+const SPAM_NAMES = new Set(["john smith", "test user", "john doe"]);
+
+// 2) Kenyan phone validation: must start with 07, 01, or +254 (then 8 digits)
+const KENYAN_PHONE_RE = /^(\+?254|0)([17])\d{8}$/;
+
+// 3) In-memory rate limiter: max 3 orders per hour per IP.
+//    NOTE: In-memory state is per-process/isolate. On Cloudflare Workers this
+//    is not globally shared across all instances; swap for Redis for a
+//    hard guarantee. Provides a reasonable basic protection layer.
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const RATE_LIMIT_MAX = 3; // max 3 orders per hour per IP
+const orderTimestamps = new Map<string, number[]>(); // IP -> timestamps
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const cutoff = now - RATE_LIMIT_WINDOW_MS;
+  // Prune entries outside the window
+  const timestamps = (orderTimestamps.get(ip) || []).filter((t) => t > cutoff);
+  orderTimestamps.set(ip, timestamps);
+  return timestamps.length >= RATE_LIMIT_MAX;
+}
+
+// Record a successfully created order for rate-limiting purposes
+function recordOrder(ip: string): void {
+  const now = Date.now();
+  const cutoff = now - RATE_LIMIT_WINDOW_MS;
+  const timestamps = (orderTimestamps.get(ip) || []).filter((t) => t > cutoff);
+  timestamps.push(now);
+  orderTimestamps.set(ip, timestamps);
+}
+
+function getClientIp(req: NextRequest): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return (
+    req.headers.get("x-real-ip") ||
+    req.headers.get("cf-connecting-ip") ||
+    req.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown"
+  );
+}
+
 export async function POST(req: NextRequest) {
   try {
     const db = await connectDB();
@@ -18,6 +63,38 @@ export async function POST(req: NextRequest) {
     }
 
     const { fullName, phone, email, address, city, region, country, notes } = body.shippingAddress;
+
+    // ---- 1) Spam name blacklist ----
+    if (SPAM_NAMES.has(String(fullName).trim().toLowerCase())) {
+      return NextResponse.json(
+        { error: "The provided name is not accepted. Please use a valid name." },
+        { status: 400 }
+      );
+    }
+
+        // ---- 2) Kenyan phone validation ----
+    const normalizedPhone = String(phone || "").replace(/[\s\-()]/g, "");
+    if (!KENYAN_PHONE_RE.test(normalizedPhone)) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid phone number. Please enter a valid Kenyan number (e.g. 07XXXXXXXX, 01XXXXXXXX, or +2547XXXXXXXX).",
+        },
+        { status: 400 }
+      );
+    }
+
+    // ---- 3) Rate limit by IP ----
+    // Check the limit before creating the order, but only record the order
+    // after it is successfully persisted (see below).
+    const clientIp = getClientIp(req);
+    if (isRateLimited(clientIp)) {
+      return NextResponse.json(
+        { error: "Too many orders. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const customerEmail = email || (phone ? `${phone}@placeholder.local` : `guest-${Date.now()}@placeholder.local`);
 
     let customer = await db.collection("customers").findOne({ $or: [{ email: customerEmail }, { phone }] });
@@ -68,7 +145,7 @@ export async function POST(req: NextRequest) {
       })),
       subtotal: body.subtotal,
       shippingCost: body.shippingCost || 0,
-      total: body.total,
+            total: body.total,
       shippingAddress: { fullName, phone: phone || "", address, city, region, country, notes: notes || "" },
       adminNotes: "",
       statusHistory: [{ status: "pending", note: "Order placed", changedAt: now }],
@@ -77,6 +154,9 @@ export async function POST(req: NextRequest) {
     };
 
     const result = await db.collection("orders").insertOne(orderData);
+
+    // Record the successful order for rate limiting
+    recordOrder(clientIp);
 
     try {
       await fetch(new URL("/api/send-order-email", req.url), {

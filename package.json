@@ -1,12 +1,17 @@
 {
   "private": true,
   "scripts": {
+    "postinstall": "node scripts/patch-next-notfound-performance.js",
+    "predev": "node scripts/patch-next-notfound-performance.js",
+    "prebuild": "node scripts/patch-next-notfound-performance.js",
+    "prestart": "node scripts/patch-next-notfound-performance.js",
+    "preview": "node scripts/patch-next-notfound-performance.js && opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "node scripts/patch-next-notfound-performance.js && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "dev": "next dev --turbopack",
     "build": "next build",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "start": "next start",
+    "patch:notfound": "node scripts/patch-next-notfound-performance.js",
     "prettier": "prettier --write --ignore-unknown .",
     "prettier:check": "prettier --check --ignore-unknown .",
     "test": "pnpm prettier:check"
@@ -71,3 +76,4 @@
     "wrangler": "^4.90.1"
   }
 }
+
