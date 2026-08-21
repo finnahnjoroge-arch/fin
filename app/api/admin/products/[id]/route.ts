@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 async function detectBrand(title: string) {
@@ -152,6 +153,10 @@ export async function PUT(
       { returnDocument: "after" }
     );
     if (!product) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    // Revalidate the storefront so changes reflect immediately without waiting
+    // for the cache to expire — both the product detail page and the homepage.
+    revalidatePath(`/product/${body.slug || product.slug}`);
+    revalidatePath("/");
     return NextResponse.json(product);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
