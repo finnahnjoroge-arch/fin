@@ -1071,11 +1071,11 @@ export default function SettingsPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              setSettings((prev) => {
+                                                            setSettings((prev) => {
                                 const next = [...prev.scripts];
-                                                                [next[index - 1]!, next[index]!] = [
-                                  next[index]!, next[index - 1]!,
-                                ];
+                                const temp = next[index - 1]!;
+                                next[index - 1] = next[index]!;
+                                next[index] = temp;
                                 return { ...prev, scripts: next };
                               });
                             }}
@@ -1088,11 +1088,11 @@ export default function SettingsPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              setSettings((prev) => {
+                                                            setSettings((prev) => {
                                 const next = [...prev.scripts];
-                                                                [next[index]!, next[index + 1]!] = [
-                                  next[index + 1]!, next[index]!,
-                                ];
+                                const temp = next[index]!;
+                                next[index] = next[index + 1]!;
+                                next[index + 1] = temp;
                                 return { ...prev, scripts: next };
                               });
                             }}
@@ -1130,9 +1130,9 @@ export default function SettingsPage() {
                             if (index === 0) return;
                             setSettings((prev) => {
                               const next = [...prev.scripts];
-                              [next[index - 1]!, next[index]!] = [
-                                next[index]!, next[index - 1]!,
-                              ];
+                              const temp = next[index - 1]!;
+                              next[index - 1] = next[index]!;
+                              next[index] = temp;
                               return { ...prev, scripts: next };
                             });
                           }}
@@ -1147,9 +1147,9 @@ export default function SettingsPage() {
                             if (index === settings.scripts.length - 1) return;
                             setSettings((prev) => {
                               const next = [...prev.scripts];
-                              [next[index]!, next[index + 1]!] = [
-                                next[index + 1]!, next[index]!,
-                              ];
+                              const temp = next[index]!;
+                              next[index] = next[index + 1]!;
+                              next[index + 1] = temp;
                               return { ...prev, scripts: next };
                             });
                           }}
