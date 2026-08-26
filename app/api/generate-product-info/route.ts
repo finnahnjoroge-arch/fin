@@ -200,6 +200,7 @@ export async function POST(req: NextRequest) {
   }
 
   const rawContent = (messageContent as Record<string, string>).content;
+  if (!rawContent) return;
 
   // 7. Extract JSON from the model's response
   let parsed: unknown;

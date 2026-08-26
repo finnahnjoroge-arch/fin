@@ -85,7 +85,7 @@ export async function PUT(req: NextRequest) {
     // changed — clear the homepage cache immediately so the storefront
     // reflects the latest settings.
     revalidatePath("/");
-    revalidateTag("store-settings");
+    revalidateTag("store-settings", "default");
 
     return NextResponse.json(settings);
   } catch (error) {

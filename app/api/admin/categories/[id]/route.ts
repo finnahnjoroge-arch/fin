@@ -40,8 +40,8 @@ export async function PUT(
 
     // Categories render on the homepage — clear its cache immediately.
     revalidatePath("/");
-    revalidateTag("categories");
-    revalidateTag("all-categories");
+    revalidateTag("categories", "default");
+    revalidateTag("all-categories", "default");
 
     return NextResponse.json(category);
   } catch (error: any) {
@@ -68,8 +68,8 @@ export async function DELETE(
       }
       await db.collection("categories").deleteOne({ _id: new ObjectId(id) });
       revalidatePath("/");
-      revalidateTag("categories");
-      revalidateTag("all-categories");
+      revalidateTag("categories", "default");
+      revalidateTag("all-categories", "default");
       return NextResponse.json({ message: "Category permanently deleted" });
     }
 
@@ -78,8 +78,8 @@ export async function DELETE(
       { $set: { deletedAt: new Date(), updatedAt: new Date() } }
     );
     revalidatePath("/");
-    revalidateTag("categories");
-    revalidateTag("all-categories");
+    revalidateTag("categories", "default");
+    revalidateTag("all-categories", "default");
     return NextResponse.json({ message: "Category moved to trash" });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

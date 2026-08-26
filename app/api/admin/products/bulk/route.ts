@@ -12,9 +12,9 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "No product IDs provided" }, { status: 400 });
     }
 
-    const objectIds = ids.map((id: string) => {
-      try { return new ObjectId(id); } catch { return id; }
-    });
+        const objectIds = ids
+      .filter((id: string) => ObjectId.isValid(id))
+      .map((id: string) => new ObjectId(id));
 
     const updateDoc: any = { $set: { updatedAt: new Date() } };
 

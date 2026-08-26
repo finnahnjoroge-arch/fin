@@ -18,7 +18,6 @@ export function ThemeClient({
       defaultTheme={defaultTheme}
       forcedTheme={forcedTheme}
       enableSystem={false}
-      injectScript={false}
     >
       {children}
     </ThemeProvider>

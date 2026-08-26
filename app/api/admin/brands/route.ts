@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
 
     // Brands render on the homepage — clear its cache immediately.
     revalidatePath("/");
-    revalidateTag("brands");
-    revalidateTag("all-brands");
+    revalidateTag("brands", "default");
+    revalidateTag("all-brands", "default");
 
     return NextResponse.json({ ...toInsert, _id: result.insertedId }, { status: 201 });
   } catch (error: any) {

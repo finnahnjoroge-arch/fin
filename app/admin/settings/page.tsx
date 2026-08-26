@@ -988,7 +988,7 @@ export default function SettingsPage() {
                               const name = e.target.value;
                               setSettings((prev) => {
                                 const next = [...prev.scripts];
-                                next[index] = { ...next[index], name };
+                                next[index] = { ...next[index], name } as ScriptSnippet;
                                 return { ...prev, scripts: next };
                               });
                             }}
@@ -1002,7 +1002,7 @@ export default function SettingsPage() {
                             const type = e.target.value as ScriptType;
                             setSettings((prev) => {
                               const next = [...prev.scripts];
-                              next[index] = { ...next[index], type };
+                              next[index] = { ...next[index], type } as ScriptSnippet;
                               return { ...prev, scripts: next };
                             });
                           }}
@@ -1019,7 +1019,7 @@ export default function SettingsPage() {
                             const location = e.target.value as ScriptLocation;
                             setSettings((prev) => {
                               const next = [...prev.scripts];
-                              next[index] = { ...next[index], location };
+                              next[index] = { ...next[index], location } as ScriptSnippet;
                               return { ...prev, scripts: next };
                             });
                           }}
@@ -1034,10 +1034,10 @@ export default function SettingsPage() {
                           onCheckedChange={(checked) => {
                             setSettings((prev) => {
                               const next = [...prev.scripts];
-                              next[index] = {
+                                                            next[index] = {
                                 ...next[index],
                                 enabled: checked,
-                              };
+                              } as ScriptSnippet;
                               return { ...prev, scripts: next };
                             });
                           }}
@@ -1057,7 +1057,7 @@ export default function SettingsPage() {
                           const code = e.target.value;
                           setSettings((prev) => {
                             const next = [...prev.scripts];
-                            next[index] = { ...next[index], code };
+                            next[index] = { ...next[index], code } as ScriptSnippet;
                             return { ...prev, scripts: next };
                           });
                         }}
@@ -1073,9 +1073,8 @@ export default function SettingsPage() {
                             onClick={() => {
                               setSettings((prev) => {
                                 const next = [...prev.scripts];
-                                [next[index - 1], next[index]] = [
-                                  next[index],
-                                  next[index - 1],
+                                                                [next[index - 1]!, next[index]!] = [
+                                  next[index]!, next[index - 1]!,
                                 ];
                                 return { ...prev, scripts: next };
                               });
@@ -1091,9 +1090,8 @@ export default function SettingsPage() {
                             onClick={() => {
                               setSettings((prev) => {
                                 const next = [...prev.scripts];
-                                [next[index], next[index + 1]] = [
-                                  next[index + 1],
-                                  next[index],
+                                                                [next[index]!, next[index + 1]!] = [
+                                  next[index + 1]!, next[index]!,
                                 ];
                                 return { ...prev, scripts: next };
                               });
@@ -1132,9 +1130,8 @@ export default function SettingsPage() {
                             if (index === 0) return;
                             setSettings((prev) => {
                               const next = [...prev.scripts];
-                              [next[index - 1], next[index]] = [
-                                next[index],
-                                next[index - 1],
+                              [next[index - 1]!, next[index]!] = [
+                                next[index]!, next[index - 1]!,
                               ];
                               return { ...prev, scripts: next };
                             });
@@ -1150,9 +1147,8 @@ export default function SettingsPage() {
                             if (index === settings.scripts.length - 1) return;
                             setSettings((prev) => {
                               const next = [...prev.scripts];
-                              [next[index], next[index + 1]] = [
-                                next[index + 1],
-                                next[index],
+                              [next[index]!, next[index + 1]!] = [
+                                next[index + 1]!, next[index]!,
                               ];
                               return { ...prev, scripts: next };
                             });
@@ -1197,7 +1193,7 @@ export default function SettingsPage() {
                         onCheckedChange={(checked) => {
                           setSettings((prev) => {
                             const next = [...prev.scripts];
-                            next[index] = { ...next[index], enabled: checked };
+                            next[index] = { ...next[index], enabled: checked } as ScriptSnippet;
                             return { ...prev, scripts: next };
                           });
                         }}

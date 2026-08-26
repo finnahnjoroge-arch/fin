@@ -1,4 +1,4 @@
-import { connectDB, disconnectDB } from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
 
@@ -10,9 +10,8 @@ async function seedAdmin() {
   const name = process.argv[4] || "Admin";
 
   const existing = await db.collection("adminusers").findOne({ email });
-  if (existing) {
+    if (existing) {
     console.log("Admin user already exists:", email);
-    await disconnectDB();
     return;
   }
 
@@ -28,14 +27,12 @@ async function seedAdmin() {
   console.log("Admin user created successfully:");
   console.log("  Email:", email);
   console.log("  Password:", password);
-  console.log("  Name:", name);
+    console.log("  Name:", name);
 
-  await disconnectDB();
-  console.log("Disconnected from MongoDB.");
+  process.exit(0);
 }
 
 seedAdmin().catch(async (err) => {
   console.error(err);
-  await disconnectDB().catch(() => {});
   process.exit(1);
 });

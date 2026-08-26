@@ -1,4 +1,5 @@
 import { connectDB } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {

@@ -253,7 +253,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
     setForm((prev) => {
       const next = [...prev.images];
       const [moved] = next.splice(fromIndex, 1);
-      next.splice(toIndex, 0, moved);
+      next.splice(toIndex, 0, moved!);
       return { ...prev, images: next };
     });
   };

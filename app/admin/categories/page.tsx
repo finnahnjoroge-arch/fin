@@ -338,7 +338,7 @@ export default function CategoriesPage() {
   image: cat.image || "",
   emoji: cat.emoji || "",
   parent: cat.parent?._id?.toString() || "none",
-  position: cat.position ?? "",
+  position: String(cat.position ?? ""),
   });
   setModalOpen(true);
   };

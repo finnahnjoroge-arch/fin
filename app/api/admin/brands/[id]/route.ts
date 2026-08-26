@@ -30,8 +30,8 @@ export async function PUT(
 
     // Brands render on the homepage — clear its cache immediately.
     revalidatePath("/");
-    revalidateTag("brands");
-    revalidateTag("all-brands");
+    revalidateTag("brands", "default");
+    revalidateTag("all-brands", "default");
 
     return NextResponse.json(brand);
   } catch (error: any) {
@@ -54,8 +54,8 @@ export async function DELETE(
     if (permanent || existing.deletedAt) {
       await db.collection("brands").deleteOne({ _id: new ObjectId(id) });
       revalidatePath("/");
-      revalidateTag("brands");
-      revalidateTag("all-brands");
+      revalidateTag("brands", "default");
+      revalidateTag("all-brands", "default");
       return NextResponse.json({ message: "Brand permanently deleted" });
     }
 
@@ -64,8 +64,8 @@ export async function DELETE(
       { $set: { deletedAt: new Date(), updatedAt: new Date() } }
     );
     revalidatePath("/");
-    revalidateTag("brands");
-    revalidateTag("all-brands");
+    revalidateTag("brands", "default");
+    revalidateTag("all-brands", "default");
     return NextResponse.json({ message: "Brand moved to trash" });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

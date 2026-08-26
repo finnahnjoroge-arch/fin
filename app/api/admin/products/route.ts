@@ -136,8 +136,8 @@ export async function GET(req: NextRequest) {
       return refs;
     });
     const uniqueCatIds = [...new Set(allCatRefs.filter(Boolean))];
-    const catDocs = uniqueCatIds.length
-      ? await db.collection("categories").find({ _id: { $in: uniqueCatIds.map((id) => { try { return new ObjectId(id); } catch { return id; } }) } }).toArray()
+        const catDocs = uniqueCatIds.length
+      ? await db.collection("categories").find({ _id: { $in: uniqueCatIds.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id)) } }).toArray()
       : [];
     const catMap = Object.fromEntries(catDocs.map((c) => [c._id.toString(), { _id: c._id, name: c.name }]));
 

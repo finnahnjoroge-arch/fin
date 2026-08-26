@@ -1,4 +1,4 @@
-import { connectDB, disconnectDB } from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
 
@@ -8,9 +8,8 @@ async function reset() {
   const email = process.argv[2];
   const password = process.argv[3];
 
-  if (!email || !password) {
+    if (!email || !password) {
     console.log("Usage: npx tsx scripts/reset-admin-password.ts <email> <password>");
-    await disconnectDB();
     return;
   }
 
@@ -26,15 +25,14 @@ async function reset() {
 
   if (result.matchedCount === 0) {
     console.log("User not found:", email);
-  } else {
+    } else {
     console.log("Password updated for:", email);
   }
 
-  await disconnectDB();
+  process.exit(0);
 }
 
 reset().catch(async (err) => {
   console.error(err);
-  await disconnectDB().catch(() => {});
   process.exit(1);
 });

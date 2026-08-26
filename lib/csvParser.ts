@@ -311,7 +311,7 @@ export function parseWebToffeeCSV(fileContent: string): WooProduct[] {
       for (const col of Object.keys(row)) {
         const match = col.match(/^attribute:(pa_.+)$/);
         if (match) {
-          attrNames.add(match[1]);
+          attrNames.add(match[1]!);
         }
       }
       for (const attrName of attrNames) {
@@ -466,7 +466,7 @@ export function generateWebToffeeCSV(products: WooProduct[]): string {
       } else if (field === "dimensions.height") {
         val = p.dimensions?.height ?? 0;
       } else {
-        val = (p as Record<string, unknown>)[field];
+        val = (p as unknown as Record<string, unknown>)[field];
       }
 
       row[header] = formatCellValue(field, val);

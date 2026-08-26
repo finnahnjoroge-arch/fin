@@ -90,8 +90,8 @@ export async function POST(req: NextRequest) {
 
     // Categories render on the homepage — clear its cache immediately.
     revalidatePath("/");
-    revalidateTag("categories");
-    revalidateTag("all-categories");
+    revalidateTag("categories", "default");
+    revalidateTag("all-categories", "default");
 
     return NextResponse.json({ ...toInsert, _id: result.insertedId }, { status: 201 });
   } catch (error: any) {
