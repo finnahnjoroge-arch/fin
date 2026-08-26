@@ -4,6 +4,15 @@ import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
 import { connectDB } from "./lib/mongodb";
 
+// Backwards compatibility: NextAuth v5 reads AUTH_URL / AUTH_SECRET,
+// but older Vercel projects may still use NEXTAUTH_URL / NEXTAUTH_SECRET.
+if (!process.env.AUTH_URL && process.env.NEXTAUTH_URL) {
+  process.env.AUTH_URL = process.env.NEXTAUTH_URL;
+}
+if (!process.env.AUTH_SECRET && process.env.NEXTAUTH_SECRET) {
+  process.env.AUTH_SECRET = process.env.NEXTAUTH_SECRET;
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
@@ -54,3 +63,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
 });
+
