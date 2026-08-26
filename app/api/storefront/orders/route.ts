@@ -88,6 +88,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Total and subtotal are required" }, { status: 400 });
     }
 
+    // Validate selected payment method against enabled methods in settings
+    const settings = await db.collection("settings").findOne({ storeId: "default" });
+    const paymentMethods = Array.isArray(settings?.paymentMethods)
+      ? settings.paymentMethods
+      : [
+          { id: "cash_on_delivery", name: "Cash on Delivery", enabled: true },
+          { id: "mpesa", name: "M-Pesa (Receive Prompt)", enabled: true },
+        ];
+    const selectedMethod = body.paymentMethod;
+    const enabledMethodIds = paymentMethods
+      .filter((m: any) => m.enabled)
+      .map((m: any) => m.id);
+    if (!selectedMethod || !enabledMethodIds.includes(selectedMethod)) {
+      return NextResponse.json(
+        { error: "Selected payment method is not available" },
+        { status: 400 }
+      );
+    }
+
     const { fullName, phone, email, address, city, region, country, notes } = body.shippingAddress;
 
     // ---- 1) Spam name blacklist ----

@@ -21,6 +21,20 @@ export async function GET() {
       faviconUrl: "",
       metaTitle: "ACME Store",
       metaDescription: "",
+      paymentMethods: [
+        {
+          id: "cash_on_delivery",
+          name: "Cash on Delivery",
+          description: "Pay when your order arrives.",
+          enabled: true,
+        },
+        {
+          id: "mpesa",
+          name: "M-Pesa (Receive Prompt)",
+          description: "Receive an M-Pesa STK push prompt on your phone.",
+          enabled: true,
+        },
+      ],
     };
     if (!settings) {
       return NextResponse.json(defaults);

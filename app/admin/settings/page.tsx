@@ -23,6 +23,13 @@ type ScriptSnippet = {
   enabled: boolean;
 };
 
+type PaymentMethod = {
+  id: "cash_on_delivery" | "mpesa";
+  name: string;
+  description: string;
+  enabled: boolean;
+};
+
 type SettingsData = {
   storeName: string;
   storeEmail: string;
@@ -60,6 +67,7 @@ type SettingsData = {
   facebookPixelId: string;
   scripts: ScriptSnippet[];
   navbarDark: boolean;
+  paymentMethods: PaymentMethod[];
 };
 
 const defaultSettings: SettingsData = {
@@ -99,6 +107,20 @@ const defaultSettings: SettingsData = {
   facebookPixelId: "",
   scripts: [],
   navbarDark: false,
+  paymentMethods: [
+    {
+      id: "cash_on_delivery",
+      name: "Cash on Delivery",
+      description: "Pay when your order arrives.",
+      enabled: true,
+    },
+    {
+      id: "mpesa",
+      name: "M-Pesa (Receive Prompt)",
+      description: "Receive an M-Pesa STK push prompt on your phone.",
+      enabled: true,
+    },
+  ],
 };
 
 export default function SettingsPage() {
@@ -155,6 +177,9 @@ export default function SettingsPage() {
               ? data.deliveryRegions.join(", ")
               : data.deliveryRegions || "",
             scripts: Array.isArray(data.scripts) ? data.scripts : [],
+            paymentMethods: Array.isArray(data.paymentMethods)
+              ? data.paymentMethods
+              : defaultSettings.paymentMethods,
           });
         }
       })
@@ -337,6 +362,7 @@ export default function SettingsPage() {
     { id: "store", label: "Store" },
     { id: "shipping", label: "Delivery Cost" },
     { id: "appearance", label: "Appearance" },
+    { id: "payments", label: "Payments" },
     { id: "scripts", label: "Scripts & Tracking" },
     { id: "account", label: "Account" },
   ];
@@ -1216,6 +1242,94 @@ export default function SettingsPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {activeTab === "payments" && (
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-medium">Payment Methods</h3>
+            <p className="text-sm text-neutral-500">
+              Enable, disable, and rename the payment options shown at checkout.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {settings.paymentMethods.map((method, index) => (
+              <div
+                key={method.id}
+                className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-700"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1 space-y-3">
+                    <div className="space-y-1">
+                      <Label htmlFor={`payment-name-${method.id}`}>
+                        Display name
+                      </Label>
+                      <Input
+                        id={`payment-name-${method.id}`}
+                        value={method.name}
+                        onChange={(e) => {
+                          const name = e.target.value;
+                          setSettings((prev) => {
+                            const next = [...prev.paymentMethods];
+                            next[index] = { ...next[index]!, name } as PaymentMethod;
+                            return { ...prev, paymentMethods: next };
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor={`payment-desc-${method.id}`}>
+                        Description
+                      </Label>
+                      <Input
+                        id={`payment-desc-${method.id}`}
+                        value={method.description}
+                        onChange={(e) => {
+                          const description = e.target.value;
+                          setSettings((prev) => {
+                            const next = [...prev.paymentMethods];
+                            next[index] = {
+                              ...next[index]!,
+                              description,
+                            } as PaymentMethod;
+                            return { ...prev, paymentMethods: next };
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={method.enabled}
+                      onCheckedChange={(checked) => {
+                        setSettings((prev) => {
+                          const next = [...prev.paymentMethods];
+                          next[index] = {
+                            ...next[index]!,
+                            enabled: checked,
+                          } as PaymentMethod;
+                          return { ...prev, paymentMethods: next };
+                        });
+                      }}
+                    />
+                    <span className="text-sm text-neutral-600">
+                      {method.enabled ? "Enabled" : "Disabled"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {settings.paymentMethods.length === 0 && (
+              <div className="rounded-lg border border-dashed border-neutral-300 p-8 text-center dark:border-neutral-700">
+                <p className="text-neutral-500">
+                  No payment methods configured.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -41,6 +41,20 @@ export default function CheckoutPage() {
     freeShippingThreshold: 5000,
     shippingNote: "",
     currency: "KES",
+    paymentMethods: [
+      {
+        id: "cash_on_delivery",
+        name: "Cash on Delivery",
+        description: "Pay on delivery.",
+        enabled: true,
+      },
+      {
+        id: "mpesa",
+        name: "M-Pesa (Receive Prompt)",
+        description: "You'll receive an M-Pesa prompt on your phone after placing your order.",
+        enabled: true,
+      },
+    ] as { id: "cash_on_delivery" | "mpesa"; name: string; description: string; enabled: boolean }[],
   });
 
   useEffect(() => {
@@ -48,12 +62,33 @@ export default function CheckoutPage() {
       .then((r) => r.json())
       .then((data) => {
         if (!data.error) {
+          const paymentMethods = Array.isArray(data.paymentMethods)
+            ? data.paymentMethods
+            : [
+                {
+                  id: "cash_on_delivery",
+                  name: "Cash on Delivery",
+                  description: "Pay on delivery.",
+                  enabled: true,
+                },
+                {
+                  id: "mpesa",
+                  name: "M-Pesa (Receive Prompt)",
+                  description: "You'll receive an M-Pesa prompt on your phone after placing your order.",
+                  enabled: true,
+                },
+              ];
           setSettings({
             shippingCost: data.shippingCost ?? 200,
             freeShippingThreshold: data.freeShippingThreshold ?? 5000,
             shippingNote: data.shippingNote || "",
             currency: data.currency || "KES",
+            paymentMethods,
           });
+          const enabled = paymentMethods.filter((m: any) => m.enabled);
+          if (enabled.length > 0) {
+            setPaymentMethod(enabled[0].id);
+          }
         }
       })
       .catch(() => { /* ignore */ });
@@ -454,60 +489,63 @@ export default function CheckoutPage() {
             <div className="space-y-2">
               <Label>Payment Method</Label>
               <div className="space-y-2">
-                <label
-                  className={`flex items-center gap-2 rounded-md border px-3 py-2.5 cursor-pointer ${
-                    paymentMethod === "cash_on_delivery"
-                      ? "border-neutral-900 bg-neutral-50"
-                      : "border-neutral-200 bg-white"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="cash_on_delivery"
-                    checked={paymentMethod === "cash_on_delivery"}
-                    onChange={() => setPaymentMethod("cash_on_delivery")}
-                    className="h-4 w-4 text-neutral-900"
-                  />
-                  <span className="text-sm font-medium">Cash on Delivery</span>
-                </label>
-
-                <label
-                  className={`block rounded-md border px-3 py-2.5 cursor-pointer ${
-                    paymentMethod === "mpesa"
-                      ? "border-emerald-600 bg-emerald-50"
-                      : "border-neutral-200 bg-white"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="mpesa"
-                      checked={paymentMethod === "mpesa"}
-                      onChange={() => setPaymentMethod("mpesa")}
-                      className="h-4 w-4 text-emerald-600"
-                    />
-                    <span className="text-sm font-medium">M-Pesa (Receive Prompt)</span>
-                  </span>
-                  {paymentMethod === "mpesa" && (
-                    <span className="mt-1.5 flex items-center pl-6 text-xs text-neutral-500">
-                      Send prompt to&nbsp;
-                      <span className="font-medium text-neutral-700">
-                        {form.phone || "your number"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={editPhone}
-                        className="ml-1 inline-flex items-center align-middle text-neutral-400 hover:text-neutral-900"
-                        title="Edit phone number"
-                        aria-label="Edit phone number"
+                {settings.paymentMethods
+                  .filter((m) => m.enabled)
+                  .map((method) => {
+                    const isSelected = paymentMethod === method.id;
+                    return (
+                      <label
+                        key={method.id}
+                        className={`block rounded-md border px-3 py-2.5 cursor-pointer ${
+                          isSelected
+                            ? method.id === "mpesa"
+                              ? "border-emerald-600 bg-emerald-50"
+                              : "border-neutral-900 bg-neutral-50"
+                            : "border-neutral-200 bg-white"
+                        }`}
                       >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                    </span>
-                  )}
-                </label>
+                        <span className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            value={method.id}
+                            checked={isSelected}
+                            onChange={() => setPaymentMethod(method.id)}
+                            className={`h-4 w-4 ${
+                              method.id === "mpesa"
+                                ? "text-emerald-600"
+                                : "text-neutral-900"
+                            }`}
+                          />
+                          <span className="text-sm font-medium">
+                            {method.name}
+                          </span>
+                        </span>
+                        {isSelected && method.id === "mpesa" && (
+                          <span className="mt-1.5 flex items-center pl-6 text-xs text-neutral-500">
+                            Send prompt to&nbsp;
+                            <span className="font-medium text-neutral-700">
+                              {form.phone || "your number"}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={editPhone}
+                              className="ml-1 inline-flex items-center align-middle text-neutral-400 hover:text-neutral-900"
+                              title="Edit phone number"
+                              aria-label="Edit phone number"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                          </span>
+                        )}
+                        {isSelected && method.description && method.id !== "mpesa" && (
+                          <span className="mt-1.5 block pl-6 text-xs text-neutral-500">
+                            {method.description}
+                          </span>
+                        )}
+                      </label>
+                    );
+                  })}
               </div>
             </div>
 
@@ -515,9 +553,11 @@ export default function CheckoutPage() {
               {submitting ? "Placing Order..." : "Place Order"}
             </Button>
             <p className="mt-2 text-center text-xs text-neutral-500">
-              {paymentMethod === "mpesa"
-                ? "You'll receive an M-Pesa prompt on your phone after placing your order."
-                : "Pay on delivery."}
+              {settings.paymentMethods.find((m) => m.id === paymentMethod)
+                ?.description ||
+                (paymentMethod === "mpesa"
+                  ? "You'll receive an M-Pesa prompt on your phone after placing your order."
+                  : "Pay on delivery.")}
             </p>
           </div>
         </div>
