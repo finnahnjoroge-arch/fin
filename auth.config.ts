@@ -2,6 +2,7 @@ import type { NextAuthConfig } from "next-auth";
 import { NextResponse } from "next/server";
 
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
   pages: {
     signIn: "/admin/login",
   },
