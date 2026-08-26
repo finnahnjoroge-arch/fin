@@ -1,4 +1,5 @@
 import { MpesaTransaction } from "@/models/MpesaTransaction";
+import { Order } from "@/models/Order";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -25,6 +26,48 @@ type CallbackPayload = {
     stkCallback?: StkCallback;
   };
 };
+
+/**
+ * Update the linked Order's paymentStatus without touching any other Order
+ * fields. The transaction may have an `orderId` (real-checkout link). We also
+ * fall back to matching an Order by its `mpesaCheckoutRequestId`, so callbacks
+ * from the standalone sandbox /mpesa-test page work too (those transactions
+ * have no orderId, but their Order, if any, can still be found by the ID).
+ *
+ * Errors here are swallowed deliberately — the callback MUST still ack Ok so
+ * Safaricom stops retrying, even if our own DB bookkeeping fails.
+ *
+ * @param tx - the updated MpesaTransaction document (may carry orderId).
+ * @param checkoutRequestId - the current callback's CheckoutRequestID.
+ * @param paymentStatus - "paid" | "failed" to set on the linked Order.
+ */
+async function syncOrderPaymentStatus(
+  tx: any,
+  checkoutRequestId: string,
+  paymentStatus: string
+): Promise<void> {
+  try {
+    // Resolve the target Order id: prefer the transaction's orderId link,
+    // otherwise search by mpesaCheckoutRequestId.
+    let orderId: string | null = tx?.orderId ?? null;
+    if (!orderId) {
+      const orderByRef = await Order.findByMpesaCheckoutRequestId(checkoutRequestId);
+      orderId = orderByRef?._id?.toString() ?? null;
+    }
+
+    if (!orderId) {
+      // No linked Order (e.g. a pure /mpesa-test transaction with no order).
+      return;
+    }
+
+    await Order.updatePaymentStatus(orderId, paymentStatus);
+    console.log(
+      `Updated Order (${orderId}) paymentStatus to "${paymentStatus}" via CheckoutRequestID=${checkoutRequestId}`
+    );
+  } catch (orderError) {
+    console.error("Failed to sync Order paymentStatus from M-Pesa callback:", orderError);
+  }
+}
 
 /**
  * POST /api/mpesa/callback
@@ -106,8 +149,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         successUpdate.phoneNumber = String(metadata.PhoneNumber);
       }
 
+      // The transaction update returns the full document (including orderId),
+      // which we use to find and flip the linked Order to "paid".
+      let updatedTx: any = null;
       try {
-        await MpesaTransaction.findOneAndUpdateByCheckoutRequestId(
+        updatedTx = await MpesaTransaction.findOneAndUpdateByCheckoutRequestId(
           CheckoutRequestID,
           successUpdate
         );
@@ -116,23 +162,36 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         // Log but DO NOT fail the ack — Safaricom must stop retrying.
         console.error("Failed to update MpesaTransaction to success:", dbError);
       }
+
+      // 7b. Payment succeeded -> update the linked Order's paymentStatus to "paid".
+      //      We look the Order up using the orderId stored on the transaction (the
+      //      real-checkout link), falling back to matching by mpesaCheckoutRequestId.
+      await syncOrderPaymentStatus(updatedTx, CheckoutRequestID, "paid");
     } else {
       // 8. Any other ResultCode means it was cancelled or failed.
       //    Record the transaction as "failed" with the result code/description.
       console.log(`Payment not successful. ResultCode=${ResultCode}, ResultDesc=${ResultDesc}`);
 
+      // The transaction update returns the full document (including orderId).
+      let updatedTxFailure: any = null;
       try {
-        await MpesaTransaction.findOneAndUpdateByCheckoutRequestId(CheckoutRequestID, {
-          status: "failed",
-          resultCode: ResultCode ?? null,
-          resultDesc: ResultDesc ?? null,
-          merchantRequestId: MerchantRequestID ?? undefined,
-        });
+        updatedTxFailure = await MpesaTransaction.findOneAndUpdateByCheckoutRequestId(
+          CheckoutRequestID,
+          {
+            status: "failed",
+            resultCode: ResultCode ?? null,
+            resultDesc: ResultDesc ?? null,
+            merchantRequestId: MerchantRequestID ?? undefined,
+          }
+        );
         console.log(`Updated MpesaTransaction (${CheckoutRequestID}) to failed.`);
       } catch (dbError) {
         // Again, log but don't fail the ack.
         console.error("Failed to update MpesaTransaction to failed:", dbError);
       }
+
+      // 8b. Payment failed -> update the linked Order's paymentStatus to "failed".
+      await syncOrderPaymentStatus(updatedTxFailure, CheckoutRequestID, "failed");
     }
   } catch (error) {
     // If anything goes wrong while inspecting the callback, log it but

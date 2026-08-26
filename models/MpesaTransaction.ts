@@ -22,6 +22,10 @@ export async function getMpesaTransactionCollection() {
  *  - checkoutRequestId   : unique ID returned by Daraja, used as the join key
  *                          between the push request and the callback.
  *  - merchantRequestId   : merchant-side request ID returned by Daraja.
+ *  - orderId             : the Mongo ObjectId of the Order this transaction
+ *                          belongs to (set when payment is initiated from the
+ *                          real checkout flow). Lets the callback locate the
+ *                          matching Order to flip it to paid/failed.
  *  - phoneNumber         : the customer's M-Pesa phone number.
  *  - amount              : amount charged (KES).
  *  - accountReference    : e.g. an order number, shown on the STK prompt.
@@ -36,6 +40,7 @@ export const MpesaTransaction = {
   /**
    * Create a new transaction document with status "pending".
    * Sets createdAt / updatedAt automatically, matching other models.
+   * Any extra field (such as orderId) passed in `doc` is stored as-is.
    */
   async create(doc: any) {
     const col = await getMpesaTransactionCollection();
@@ -65,6 +70,16 @@ export const MpesaTransaction = {
   async findByCheckoutRequestId(checkoutRequestId: string) {
     const col = await getMpesaTransactionCollection();
     return col.findOne({ checkoutRequestId });
+  },
+
+  /**
+   * Find a transaction by the linked orderId (the Order._id).
+   * Useful if you ever need to look up a payment from an order without
+   * knowing the checkoutRequestId.
+   */
+  async findByOrderId(orderId: string) {
+    const col = await getMpesaTransactionCollection();
+    return col.findOne({ orderId });
   },
 
   /**

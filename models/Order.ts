@@ -1,5 +1,5 @@
-import { ObjectId } from "mongodb";
 import { connectDB } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 export async function getOrderCollection() {
   const db = await connectDB();
@@ -23,10 +23,35 @@ export const Order = {
       { returnDocument: "after", ...options }
     );
   },
+  // Look up an order by the M-Pesa checkoutRequestId returned by Daraja.
+  // Used by the M-Pesa callback to flip the linked Order to "paid"/"failed".
+  async findByMpesaCheckoutRequestId(checkoutRequestId: string) {
+    const col = await getOrderCollection();
+    return col.findOne({ mpesaCheckoutRequestId: checkoutRequestId });
+  },
+  // Update ONLY the paymentStatus field on an order (no other order fields
+  // are touched) so the M-Pesa callback can keep the order in sync without
+  // risking overwriting anything the customer/admin may have changed.
+  async updatePaymentStatus(id: string, paymentStatus: string) {
+    const col = await getOrderCollection();
+    return col.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { paymentStatus, updatedAt: new Date() } }
+    );
+  },
   async create(doc: any) {
     const col = await getOrderCollection();
     const now = new Date();
-    const toInsert = { ...doc, createdAt: now, updatedAt: now };
+    // Default payment lifecycle fields when the caller doesn't supply them.
+    // - paymentStatus: "pending" | "paid" | "failed"
+    // - mpesaCheckoutRequestId: links this order to its M-Pesa transaction.
+    const toInsert = {
+      paymentStatus: "pending",
+      mpesaCheckoutRequestId: null,
+      ...doc,
+      createdAt: now,
+      updatedAt: now,
+    };
     const result = await col.insertOne(toInsert);
     return { ...toInsert, _id: result.insertedId };
   },
@@ -35,3 +60,4 @@ export const Order = {
     return col.countDocuments(filter);
   },
 };
+

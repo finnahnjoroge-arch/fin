@@ -126,3 +126,93 @@ export function normalizePhoneNumber(phoneNumber: string): string {
   return "254" + digits.replace(/^0/, "");
 }
 
+/**
+ * Options required to initiate a single STK push from Daraja.
+ */
+export type InitiateStkPushOptions = {
+  phoneNumber: string; // customer's phone in any common format
+  amount: string | number; // amount to charge in KES
+  accountReference: string; // e.g. order number, shown on the STK prompt
+  description?: string; // free-form description of the transaction
+};
+
+// The endpoint that initiates an M-Pesa STK push prompt on the customer's phone.
+const STK_PUSH_URL = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
+
+/**
+ * Initiate a full M-Pesa STK push to the customer's phone and return Daraja's
+ * acknowledgement. This centralises the token + password + timestamp + payload
+ * + HTTP send so both the standalone /api/mpesa/stkpush route AND the checkout
+ * order-creation flow can trigger a push WITHOUT duplicating any logic.
+ *
+ * The returned object is the parsed Daraja JSON. When accepted it includes:
+ *   - ResponseCode: "0"          (the STK prompt was sent successfully)
+ *   - CheckoutRequestID          (the unique id used later to poll status)
+ *   - MerchantRequestID
+ *
+ * NOTE: this function only SENDS the request. The caller decides what to do
+ * with a successful response (e.g. persist an MpesaTransaction, link the
+ * order, return the checkoutRequestId to the frontend).
+ *
+ * @param {InitiateStkPushOptions} opts - phone, amount, reference, description.
+ * @returns {Promise<Record<string, unknown>>} The raw Daraja response body.
+ */
+export async function initiateStkPush(
+  opts: InitiateStkPushOptions
+): Promise<Record<string, unknown>> {
+  const { phoneNumber, amount, accountReference, description } = opts;
+
+  // 1. Grab required env config.
+  const shortCode = process.env.MPESA_SHORTCODE;
+  const callbackUrl = process.env.MPESA_CALLBACK_URL;
+  if (!shortCode || !callbackUrl) {
+    throw new Error("MPESA_SHORTCODE or MPESA_CALLBACK_URL is missing from environment variables.");
+  }
+
+  // 2. Get a fresh OAuth access token.
+  const accessToken = await getAccessToken();
+
+  // 3. Build the timestamp + password + normalized customer phone.
+  const timestamp = formatDarajaTimestamp();
+  const password = generateSTKPassword();
+  const partyA = normalizePhoneNumber(phoneNumber);
+
+  // 4. Assemble the payload as documented by Safaricom for CustomerPayBillOnline.
+  const payload = {
+    BusinessShortCode: shortCode,
+    Password: password,
+    Timestamp: timestamp,
+    TransactionType: "CustomerPayBillOnline",
+    Amount: String(amount),
+    PartyA: partyA, // payer (customer)
+    PartyB: shortCode, // paybill/till number receiving money
+    PhoneNumber: partyA, // phone to receive the STK prompt
+    CallBackURL: callbackUrl,
+    AccountReference: accountReference,
+    TransactionDesc: description ?? "Payment",
+  };
+
+  console.log("STK Push payload:", payload);
+
+  // 5. Send the STK push request to Daraja and parse the response.
+  const res = await fetch(STK_PUSH_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const json = (await res.json()) as Record<string, unknown>;
+  console.log("Daraja STK push raw response:", json);
+
+  if (!res.ok) {
+    throw new Error(
+      `STK push request failed (status ${res.status}: ${res.statusText}). ` +
+        `Body: ${JSON.stringify(json)}`
+    );
+  }
+
+  return json;
+}

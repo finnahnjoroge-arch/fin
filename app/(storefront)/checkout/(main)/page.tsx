@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useCart } from "components/cart/cart-context";
 import Price from "components/price";
 import { PageSpinner } from "components/spinner";
+import { Pencil } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -16,6 +17,11 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showNotes, setShowNotes] = useState(false);
+  // Selected payment method: "mpesa" triggers the M-Pesa STK push flow;
+  // "cash_on_delivery" is the default and requires no online payment.
+  const [paymentMethod, setPaymentMethod] = useState<"cash_on_delivery" | "mpesa">(
+    "cash_on_delivery"
+  );
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -88,6 +94,16 @@ export default function CheckoutPage() {
     return errs;
   };
 
+  // Scroll back up to the phone field and focus it so the customer can edit
+  // the number that will receive the M-Pesa prompt.
+  const editPhone = () => {
+    const el = document.getElementById("phoneInput");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      (el as HTMLInputElement).focus();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validate();
@@ -119,7 +135,32 @@ export default function CheckoutPage() {
       const res = await fetch("/api/storefront/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                body: JSON.stringify({
           items,
           shippingAddress: {
             fullName: form.fullName,
@@ -131,6 +172,9 @@ export default function CheckoutPage() {
             country: form.country,
             notes: form.notes,
           },
+          // Send the chosen payment method so the order-creation route knows
+          // whether to trigger the M-Pesa STK push.
+          paymentMethod,
           subtotal,
           shippingCost,
           total,
@@ -143,7 +187,12 @@ export default function CheckoutPage() {
 
       localStorage.removeItem("cart");
       window.dispatchEvent(new Event("cart-updated"));
-      router.push(`/checkout/success?orderId=${data.orderId}`);
+      // Pass both the order id and (for M-Pesa) the CheckoutRequestID so the
+      // success page can begin live-polling the payment result.
+      const cid = data.checkoutRequestId
+        ? `&checkoutRequestId=${encodeURIComponent(data.checkoutRequestId)}`
+        : "";
+      router.push(`/checkout/success?orderId=${data.orderId}${cid}`);
     } catch (err: any) {
       setErrors({ form: err.message });
     } finally {
@@ -333,9 +382,10 @@ export default function CheckoutPage() {
 
 
                         <div className="grid gap-4 grid-cols-2">
-                          <div className="space-y-2">
+                                                    <div className="space-y-2">
                             <Label>Phone Number</Label>
                             <Input
+                              id="phoneInput"
                               value={form.phone}
                               onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
                               placeholder="0712345678"
@@ -399,11 +449,76 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          <div className="border-t border-neutral-200 p-4">
+                    <div className="border-t border-neutral-200 p-4 space-y-4">
+            {/* Payment method selection */}
+            <div className="space-y-2">
+              <Label>Payment Method</Label>
+              <div className="space-y-2">
+                <label
+                  className={`flex items-center gap-2 rounded-md border px-3 py-2.5 cursor-pointer ${
+                    paymentMethod === "cash_on_delivery"
+                      ? "border-neutral-900 bg-neutral-50"
+                      : "border-neutral-200 bg-white"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cash_on_delivery"
+                    checked={paymentMethod === "cash_on_delivery"}
+                    onChange={() => setPaymentMethod("cash_on_delivery")}
+                    className="h-4 w-4 text-neutral-900"
+                  />
+                  <span className="text-sm font-medium">Cash on Delivery</span>
+                </label>
+
+                <label
+                  className={`block rounded-md border px-3 py-2.5 cursor-pointer ${
+                    paymentMethod === "mpesa"
+                      ? "border-emerald-600 bg-emerald-50"
+                      : "border-neutral-200 bg-white"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="mpesa"
+                      checked={paymentMethod === "mpesa"}
+                      onChange={() => setPaymentMethod("mpesa")}
+                      className="h-4 w-4 text-emerald-600"
+                    />
+                    <span className="text-sm font-medium">M-Pesa (Receive Prompt)</span>
+                  </span>
+                  {paymentMethod === "mpesa" && (
+                    <span className="mt-1.5 flex items-center pl-6 text-xs text-neutral-500">
+                      Send prompt to&nbsp;
+                      <span className="font-medium text-neutral-700">
+                        {form.phone || "your number"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={editPhone}
+                        className="ml-1 inline-flex items-center align-middle text-neutral-400 hover:text-neutral-900"
+                        title="Edit phone number"
+                        aria-label="Edit phone number"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </span>
+                  )}
+                </label>
+              </div>
+            </div>
+
             <Button className="w-full" type="submit" disabled={submitting}>
               {submitting ? "Placing Order..." : "Place Order"}
             </Button>
-            <p className="mt-2 text-center text-xs text-neutral-500">Cash on Delivery</p>
+            <p className="mt-2 text-center text-xs text-neutral-500">
+              {paymentMethod === "mpesa"
+                ? "You'll receive an M-Pesa prompt on your phone after placing your order."
+                : "Pay on delivery."}
+            </p>
           </div>
         </div>
       </form>
