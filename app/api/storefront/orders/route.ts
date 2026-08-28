@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
     recordOrder(clientIp);
 
     try {
-      await fetch(new URL("/api/send-order-email", req.url), {
+      const emailRes = await fetch(new URL("/api/send-order-email", req.url), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -249,8 +249,10 @@ export async function POST(req: NextRequest) {
           productUrl: body.items?.[0]?.productId ? `https://finnorah.co.ke/product/${body.items[0].handle || ""}` : "",
         }),
       });
-    } catch (emailError) {
-      console.error("Order email error:", emailError);
+      const emailData = await emailRes.json();
+      if (!emailRes.ok) console.error("Email route error:", emailData);
+    } catch (emailError: any) {
+      console.error("Order email error:", emailError?.message || emailError);
     }
 
         // ---- M-Pesa payment (only when the customer chose M-Pesa) ----
@@ -329,3 +331,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
+
+
+
