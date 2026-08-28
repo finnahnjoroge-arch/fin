@@ -1,12 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCart } from "components/cart/cart-context";
 import Price from "components/price";
 import { PageSpinner } from "components/spinner";
-import { Pencil } from "lucide-react";
+import { ChevronDown, Pencil } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,6 +22,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showNotes, setShowNotes] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   // Selected payment method: "mpesa" triggers the M-Pesa STK push flow;
   // "cash_on_delivery" is the default and requires no online payment.
   const [paymentMethod, setPaymentMethod] = useState<"cash_on_delivery" | "mpesa">(
@@ -235,6 +241,61 @@ export default function CheckoutPage() {
     }
   };
 
+  const orderSummaryBody = (
+    <>
+      <div className="divide-y divide-neutral-100 px-4 py-2">
+        {cart.lines.map((line, i) => (
+          <div key={i} className="flex items-center gap-3 py-2 min-w-0">
+            <div className="relative h-12 w-12 flex-none overflow-hidden rounded border border-neutral-200 bg-neutral-50">
+              <Image
+                src={
+                  line.merchandise.product.image?.url ||
+                  line.merchandise.product.featuredImage?.url ||
+                  ""
+                }
+                alt={line.merchandise.product.title}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-medium text-neutral-900">
+                {line.merchandise.product.title}
+              </p>
+              <p className="text-xs text-neutral-500">Qty: {line.quantity}</p>
+            </div>
+            <Price
+              className="flex-none text-sm text-neutral-900"
+              amount={line.cost.totalAmount.amount}
+              currencyCode={line.cost.totalAmount.currencyCode}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-neutral-100 px-4 py-3 space-y-1.5 text-sm">
+        {settings.shippingNote && (
+          <p className="text-xs text-neutral-500">{settings.shippingNote}</p>
+        )}
+        <div className="flex justify-between">
+          <span className="text-neutral-600">Subtotal</span>
+          <Price amount={subtotal.toString()} currencyCode={cart.cost.subtotalAmount.currencyCode} />
+        </div>
+        <div className="flex justify-between">
+          <span className="text-neutral-600">Delivery</span>
+          {shippingCost === 0 ? (
+            <span className="text-sm font-medium text-green-600">Free</span>
+          ) : (
+            <Price amount={shippingCost.toString()} currencyCode={cart.cost.subtotalAmount.currencyCode} />
+          )}
+        </div>
+        <div className="flex justify-between border-t border-neutral-100 pt-2 text-base font-bold text-neutral-900">
+          <span>Total</span>
+          <Price amount={total.toString()} currencyCode={cart.cost.subtotalAmount.currencyCode} />
+        </div>
+      </div>
+    </>
+  );
+
 
 
     return (
@@ -376,7 +437,22 @@ export default function CheckoutPage() {
 
 
                 {/* Delivery Information Card */}
-                <div className="rounded-none md:rounded-lg border border-neutral-200 bg-white shadow-sm overflow-hidden flex flex-col">
+                <div className="rounded-lg border border-neutral-200 bg-white shadow-sm overflow-hidden flex flex-col">
+          {/* Mobile order summary - collapsed */}
+          <div className="border-b border-neutral-200 md:hidden">
+            <Collapsible open={summaryOpen} onOpenChange={setSummaryOpen}>
+              <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-neutral-900">
+                Order Summary
+                <ChevronDown
+                  className={`h-4 w-4 text-neutral-500 transition-transform ${
+                    summaryOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </CollapsibleTrigger>
+              <CollapsibleContent>{orderSummaryBody}</CollapsibleContent>
+            </Collapsible>
+          </div>
+
           <div className="space-y-4 p-4 flex-1">
             <div className="space-y-2">
               <Label>Full Name</Label>
@@ -552,13 +628,6 @@ export default function CheckoutPage() {
             <Button className="w-full" type="submit" disabled={submitting}>
               {submitting ? "Placing Order..." : "Place Order"}
             </Button>
-            <p className="mt-2 text-center text-xs text-neutral-500">
-              {settings.paymentMethods.find((m) => m.id === paymentMethod)
-                ?.description ||
-                (paymentMethod === "mpesa"
-                  ? "You'll receive an M-Pesa prompt on your phone after placing your order."
-                  : "Pay on delivery.")}
-            </p>
           </div>
         </div>
       </form>
@@ -622,61 +691,11 @@ export default function CheckoutPage() {
 
             {/* Order Summary - compact */}
 
-      <div className="rounded-lg border border-neutral-200 bg-white shadow-sm min-w-0 overflow-hidden">
+      <div className="hidden md:block rounded-lg border border-neutral-200 bg-white shadow-sm min-w-0 overflow-hidden">
         <div className="border-b border-neutral-100 px-4 py-3">
           <h2 className="text-base font-semibold text-neutral-900">Order Summary</h2>
         </div>
-        <div className="divide-y divide-neutral-100 px-4 py-2">
-          {cart.lines.map((line, i) => (
-
-            <div key={i} className="flex items-center gap-3 py-2 min-w-0">
-              <div className="relative h-12 w-12 flex-none overflow-hidden rounded border border-neutral-200 bg-neutral-50">
-                <Image
-                  src={
-                    line.merchandise.product.image?.url ||
-                    line.merchandise.product.featuredImage?.url ||
-                    ""
-                  }
-                  alt={line.merchandise.product.title}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="truncate text-sm font-medium text-neutral-900">
-                  {line.merchandise.product.title}
-                </p>
-                <p className="text-xs text-neutral-500">Qty: {line.quantity}</p>
-              </div>
-              <Price
-                className="flex-none text-sm text-neutral-900"
-                amount={line.cost.totalAmount.amount}
-                currencyCode={line.cost.totalAmount.currencyCode}
-              />
-            </div>
-          ))}
-        </div>
-        <div className="border-t border-neutral-100 px-4 py-3 space-y-1.5 text-sm">
-          {settings.shippingNote && (
-            <p className="text-xs text-neutral-500">{settings.shippingNote}</p>
-          )}
-          <div className="flex justify-between">
-            <span className="text-neutral-600">Subtotal</span>
-            <Price amount={subtotal.toString()} currencyCode={cart.cost.subtotalAmount.currencyCode} />
-          </div>
-          <div className="flex justify-between">
-            <span className="text-neutral-600">Delivery</span>
-            {shippingCost === 0 ? (
-              <span className="text-sm font-medium text-green-600">Free</span>
-            ) : (
-              <Price amount={shippingCost.toString()} currencyCode={cart.cost.subtotalAmount.currencyCode} />
-            )}
-          </div>
-          <div className="flex justify-between border-t border-neutral-100 pt-2 text-base font-bold text-neutral-900">
-            <span>Total</span>
-            <Price amount={total.toString()} currencyCode={cart.cost.subtotalAmount.currencyCode} />
-          </div>
-        </div>
+        {orderSummaryBody}
       </div>
     </div>
   );
