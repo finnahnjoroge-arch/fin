@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
     recordOrder(clientIp);
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/send-order-email`, {
+      await fetch(new URL("/api/send-order-email", req.url), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
