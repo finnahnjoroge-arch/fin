@@ -64,7 +64,8 @@ export async function POST(req: Request) {
   const STORE_NAME  = settings.storeName  || 'Our Store';
   const STORE_PHONE = settings.storePhone || settings.whatsappPhone || '';
   const STORE_URL   = process.env.NEXT_PUBLIC_SITE_URL || '';
-  const FROM_EMAIL  = settings.storeEmail || process.env.FROM_EMAIL || '';
+  // Use storeEmail from settings, fallback to FROM_EMAIL env, fallback to Resend default
+  const FROM_EMAIL  = settings.storeEmail || process.env.FROM_EMAIL || 'onboarding@resend.dev';
   const FROM        = `${STORE_NAME} <${FROM_EMAIL}>`;
   const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
   const isPlaceholder = !customerEmail || customerEmail.includes('placeholder.local');
@@ -110,9 +111,10 @@ export async function POST(req: Request) {
     }
 
     // Customer confirmation (skip placeholders)
+    console.log('Email send attempt:', { FROM, to: customerEmail, isPlaceholder, FROM_EMAIL });
     if (!isPlaceholder) {
       try {
-        await resend.emails.send({
+        const customerResult = await resend.emails.send({
           from: FROM,
           to: customerEmail,
           subject: `Order Confirmed ✅ #${orderId} — ${STORE_NAME}`,
@@ -126,8 +128,9 @@ export async function POST(req: Request) {
             ${ctaButton('Continue Shopping →', STORE_URL)}
           `)
         });
-      } catch (customerEmailError) {
-        console.error('Failed to send customer order confirmation:', customerEmailError);
+        console.log('Customer email sent:', customerResult);
+      } catch (customerEmailError: any) {
+        console.error('Failed to send customer order confirmation:', customerEmailError?.message || customerEmailError);
         // Don't block admin email
       }
     }
@@ -135,7 +138,7 @@ export async function POST(req: Request) {
     // Admin notification (always try to send)
     if (ADMIN_EMAIL) {
       try {
-        await resend.emails.send({
+        const adminResult = await resend.emails.send({
           from: FROM,
           to: ADMIN_EMAIL,
           subject: `🛒 New Order #${orderId} — KES ${total}`,
@@ -156,14 +159,16 @@ export async function POST(req: Request) {
             ${ctaButton('View in Admin Panel →', `${STORE_URL}/admin/login`)}
           `)
         });
-      } catch (adminEmailError) {
-        console.error('Failed to send admin order notification:', adminEmailError);
+        console.log('Admin email sent:', adminResult);
+      } catch (adminEmailError: any) {
+        console.error('Failed to send admin order notification:', adminEmailError?.message || adminEmailError);
       }
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error }, { status: 500 });
+  } catch (error: any) {
+    console.error('Send email fatal error:', error);
+    return NextResponse.json({ error: error?.message || error }, { status: 500 });
   }
 }
 
