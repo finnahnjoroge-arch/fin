@@ -1,6 +1,6 @@
+import { getStoreSettings } from '@/lib/storefront/settings';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { getStoreSettings } from '@/lib/storefront/settings';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -66,81 +66,100 @@ export async function POST(req: Request) {
   const STORE_URL   = process.env.NEXT_PUBLIC_SITE_URL || '';
   const FROM_EMAIL  = settings.storeEmail || process.env.FROM_EMAIL || '';
   const FROM        = `${STORE_NAME} <${FROM_EMAIL}>`;
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+  const isPlaceholder = !customerEmail || customerEmail.includes('placeholder.local');
 
   try {
     if (shipped) {
-      await resend.emails.send({
-        from: FROM,
-        to: customerEmail,
-        subject: `Your Order Has Shipped 🚚 — ${STORE_NAME}`,
-        html: layout(STORE_NAME, STORE_URL, `
-          <h2>Your order is on its way! 🚚</h2>
-          <p>Hi ${customerName},</p>
-          <p>Great news! Your order <strong>#${orderId}</strong> has been shipped and is on its way to you.</p>
-          ${infoBox('Order Details', `<strong>Order ID:</strong> #${orderId}`, `<strong>Total:</strong> KES ${total}`)}
-          <p>If you have any questions about your delivery, feel free to call us:</p>
-          ${STORE_PHONE ? phoneBox(STORE_PHONE) : ''}
-          ${ctaButton('Continue Shopping →', STORE_URL)}
-        `)
-      });
+      if (!isPlaceholder) {
+        await resend.emails.send({
+          from: FROM,
+          to: customerEmail,
+          subject: `Your Order Has Shipped 🚚 — ${STORE_NAME}`,
+          html: layout(STORE_NAME, STORE_URL, `
+            <h2>Your order is on its way! 🚚</h2>
+            <p>Hi ${customerName},</p>
+            <p>Great news! Your order <strong>#${orderId}</strong> has been shipped and is on its way to you.</p>
+            ${infoBox('Order Details', `<strong>Order ID:</strong> #${orderId}`, `<strong>Total:</strong> KES ${total}`)}
+            <p>If you have any questions about your delivery, feel free to call us:</p>
+            ${STORE_PHONE ? phoneBox(STORE_PHONE) : ''}
+            ${ctaButton('Continue Shopping →', STORE_URL)}
+          `)
+        });
+      }
       return NextResponse.json({ success: true });
     }
 
     if (cancelled) {
-      await resend.emails.send({
-        from: FROM,
-        to: customerEmail,
-        subject: `Your Order Has Been Cancelled — ${STORE_NAME}`,
-        html: layout(STORE_NAME, STORE_URL, `
-          <h2 style="color: #c0392b;">Order Cancelled</h2>
-          <p>Hi ${customerName},</p>
-          <p>We're sorry to let you know that your order <strong>#${orderId}</strong> has been cancelled.</p>
-          <p>If you have any questions or believe this was a mistake, please don't hesitate to contact us.</p>
-          ${STORE_PHONE ? phoneBox(STORE_PHONE) : ''}
-          ${ctaButton('Continue Shopping', STORE_URL)}
-        `)
-      });
+      if (!isPlaceholder) {
+        await resend.emails.send({
+          from: FROM,
+          to: customerEmail,
+          subject: `Your Order Has Been Cancelled — ${STORE_NAME}`,
+          html: layout(STORE_NAME, STORE_URL, `
+            <h2 style="color: #c0392b;">Order Cancelled</h2>
+            <p>Hi ${customerName},</p>
+            <p>We're sorry to let you know that your order <strong>#${orderId}</strong> has been cancelled.</p>
+            <p>If you have any questions or believe this was a mistake, please don't hesitate to contact us.</p>
+            ${STORE_PHONE ? phoneBox(STORE_PHONE) : ''}
+            ${ctaButton('Continue Shopping', STORE_URL)}
+          `)
+        });
+      }
       return NextResponse.json({ success: true });
     }
 
-    // Customer confirmation
-    await resend.emails.send({
-      from: FROM,
-      to: customerEmail,
-      subject: `Order Confirmed ✅ #${orderId} — ${STORE_NAME}`,
-      html: layout(STORE_NAME, STORE_URL, `
-        <h2>Thank you for your order, ${customerName}! 🎉</h2>
-        <p>Your order has been received and is being processed.</p>
-        ${infoBox('Order Details', `<strong>Order ID:</strong> #${orderId}`, `<strong>Total:</strong> KES ${total}`)}
-        ${itemsList(items)}
-        <p>We'll notify you once your order dispatches. If you need help, feel free to call us:</p>
-        ${STORE_PHONE ? phoneBox(STORE_PHONE) : ''}
-        ${ctaButton('Continue Shopping →', STORE_URL)}
-      `)
-    });
+    // Customer confirmation (skip placeholders)
+    if (!isPlaceholder) {
+      try {
+        await resend.emails.send({
+          from: FROM,
+          to: customerEmail,
+          subject: `Order Confirmed ✅ #${orderId} — ${STORE_NAME}`,
+          html: layout(STORE_NAME, STORE_URL, `
+            <h2>Thank you for your order, ${customerName}! 🎉</h2>
+            <p>Your order has been received and is being processed.</p>
+            ${infoBox('Order Details', `<strong>Order ID:</strong> #${orderId}`, `<strong>Total:</strong> KES ${total}`)}
+            ${itemsList(items)}
+            <p>We'll notify you once your order dispatches. If you need help, feel free to call us:</p>
+            ${STORE_PHONE ? phoneBox(STORE_PHONE) : ''}
+            ${ctaButton('Continue Shopping →', STORE_URL)}
+          `)
+        });
+      } catch (customerEmailError) {
+        console.error('Failed to send customer order confirmation:', customerEmailError);
+        // Don't block admin email
+      }
+    }
 
-    // Admin notification
-    await resend.emails.send({
-      from: FROM,
-      to: process.env.ADMIN_EMAIL!,
-      subject: `🛒 New Order #${orderId} — KES ${total}`,
-      html: layout(STORE_NAME, STORE_URL, `
-        <h2 style="margin-top:0;">New Order Received</h2>
-        ${infoBox('Order Details',
-          `<strong>Order ID:</strong> #${orderId}`,
-          `<strong>Total:</strong> KES ${total}`
-        )}
-        ${itemsList(items)}
-        ${infoBox('Customer Details',
-          `<strong>Name:</strong> ${customerName}`,
-          `<strong>Email:</strong> ${customerEmail}`,
-          ...(phone   ? [`<strong>Phone:</strong> ${phone}`]     : []),
-          ...(address ? [`<strong>Address:</strong> ${address}`] : []),
-          ...(notes     ? [`<strong>Notes:</strong> ${notes}`]     : [])
-        )}
-        ${ctaButton('View in Admin Panel →', `${STORE_URL}/admin/login`)}
-      `)
-    });
+    // Admin notification (always try to send)
+    if (ADMIN_EMAIL) {
+      try {
+        await resend.emails.send({
+          from: FROM,
+          to: ADMIN_EMAIL,
+          subject: `🛒 New Order #${orderId} — KES ${total}`,
+          html: layout(STORE_NAME, STORE_URL, `
+            <h2 style="margin-top:0;">New Order Received</h2>
+            ${infoBox('Order Details',
+              `<strong>Order ID:</strong> #${orderId}`,
+              `<strong>Total:</strong> KES ${total}`
+            )}
+            ${itemsList(items)}
+            ${infoBox('Customer Details',
+              `<strong>Name:</strong> ${customerName}`,
+              `<strong>Email:</strong> ${customerEmail || 'Not provided'}`,
+              ...(phone   ? [`<strong>Phone:</strong> ${phone}`]     : []),
+              ...(address ? [`<strong>Address:</strong> ${address}`] : []),
+              ...(notes     ? [`<strong>Notes:</strong> ${notes}`]     : [])
+            )}
+            ${ctaButton('View in Admin Panel →', `${STORE_URL}/admin/login`)}
+          `)
+        });
+      } catch (adminEmailError) {
+        console.error('Failed to send admin order notification:', adminEmailError);
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
