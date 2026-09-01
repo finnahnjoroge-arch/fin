@@ -188,8 +188,8 @@ export default async function ProductPage(props: {
 
                         {/* ── MOBILE: compact stacked layout ── */}
             <div className="lg:hidden">
-              {/* Image - no padding, touches edges */}
-              <div className="bg-white">
+                            {/* Image - clean white card for mobile contrast */}
+              <div className="border-b border-neutral-200 bg-white md:rounded-2xl md:border md:border-neutral-200 md:shadow-sm md:overflow-hidden">
                 <Suspense
                   fallback={
                     <div className="relative w-full aspect-[4/3] max-h-[48vw] overflow-hidden bg-neutral-100" />
@@ -204,9 +204,9 @@ export default async function ProductPage(props: {
                 </Suspense>
               </div>
 
-              {/* Title + Price + Variants + Actions all in one block */}
+                            {/* Title + Price + Variants + Actions all in one block */}
               {/* Breadcrumbs (Home > Category) appear above the title via ProductDescription */}
-              <div className="bg-white px-3 pt-1.5 pb-3 border-t border-neutral-100">
+              <div className="mx-3 mt-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
                 <Suspense fallback={null}>
                   <ProductDescription product={product} compact breadcrumbs={breadcrumbItems} />
                 </Suspense>
@@ -505,8 +505,8 @@ export default async function ProductPage(props: {
 
 
 
-                            {/* Image - no card wrapper, touches edges */}
-              <div className="overflow-hidden">
+                                                        {/* Image - white card wrapper for visual separation */}
+              <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
                 <Suspense
                   fallback={
                     <div className="relative aspect-square h-full max-h-[400px] w-full overflow-hidden bg-neutral-100" />
@@ -523,7 +523,10 @@ export default async function ProductPage(props: {
 
                                                                                                               {/* Second column: breadcrumbs appear above the title via ProductDescription */}
 
-                                                                                                              <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden self-start">
+                                                                                                                                                                                                                            <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden self-start">
+                                                                                                                <div className="border-b border-neutral-200 bg-neutral-50/70 px-4 py-2.5 md:px-5">
+                                                                                                                  <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-500">Product Details</h2>
+                                                                                                                </div>
                                                                                                                 <div className="p-4 md:p-5 overflow-y-auto">
                                                                                                                   <Suspense fallback={null}>
                                                                                                                     <ProductDescription product={product} breadcrumbs={breadcrumbItems} />
@@ -532,7 +535,10 @@ export default async function ProductPage(props: {
                                                                                                               </div>
 
 
-                                                                                                              <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+                                                                                                                                                                                                                            <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+                                                                                                                <div className="border-b border-neutral-200 bg-neutral-50/70 px-4 py-2.5 md:px-5">
+                                                                                                                  <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-500">Purchase Options</h2>
+                                                                                                                </div>
                                                                                                                 <div className="p-4 md:p-5">
                                                                                                                   <Suspense fallback={null}>
                                                                                                                     <ProductActions
@@ -680,12 +686,16 @@ export default async function ProductPage(props: {
 
 
 
-            <div className="mt-3 mb-4 rounded-none border border-neutral-200 bg-white p-4 shadow-sm md:mx-0 md:mt-6 md:mb-6 md:p-8 md:rounded-2xl">
-              <h2 className="mb-2 text-lg font-bold text-neutral-900 md:mb-4 md:text-2xl">Product Description</h2>
-              <Prose
-                className="text-sm leading-relaxed text-neutral-700"
-                html={product.descriptionHtml}
-              />
+                        <div className="mt-3 mb-4 overflow-hidden rounded-none border border-neutral-200 bg-white shadow-sm md:mx-0 md:mt-6 md:mb-6 md:rounded-2xl">
+              <div className="border-b border-neutral-200 bg-neutral-50/70 px-4 py-3 md:px-8 md:py-4">
+                <h2 className="text-lg font-bold text-neutral-900 md:text-2xl">Product Description</h2>
+              </div>
+              <div className="p-4 md:p-8">
+                <Prose
+                  className="text-sm leading-relaxed text-neutral-700"
+                  html={product.descriptionHtml}
+                />
+              </div>
             </div>
           ) : null}
           <RelatedProducts
@@ -721,8 +731,10 @@ async function RelatedProducts({
   const items = relatedProducts.slice(0, 4);
 
   return (
-    <div className="mx-3 mt-4 mb-4 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm md:mx-0 md:mt-6 md:mb-6 md:p-8">
-      <h2 className="mb-4 text-2xl font-bold text-neutral-900 md:mb-6">Related Products</h2>
+        <div className="mx-3 mt-4 mb-4 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm md:mx-0 md:mt-6 md:mb-6 md:p-8">
+      <div className="-mx-5 -mt-5 mb-4 border-b border-neutral-200 bg-neutral-50/70 px-5 py-3 md:-mx-8 md:-mt-8 md:mb-6 md:px-8 md:py-4">
+        <h2 className="text-lg font-bold text-neutral-900 md:text-2xl">Related Products</h2>
+      </div>
       <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {items.map((product: any) => (
           <li key={product.handle} className="aspect-square">
