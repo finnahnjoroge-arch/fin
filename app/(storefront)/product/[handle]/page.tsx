@@ -109,13 +109,17 @@ export default async function ProductPage(props: {
       sku: v.id,
     }));
 
-    const productJsonLd = {
+
+
+
+
+
+
+
+        const productJsonLd = {
       "@context": "https://schema.org",
       "@type": "Product",
-
-
-
-                        name: product.title,
+      name: product.title,
       description: product.description,
       image: product.featuredImage?.url || product.images?.[0]?.url,
       url: productUrl,
@@ -179,19 +183,16 @@ export default async function ProductPage(props: {
 
                 <div className="mx-auto w-full max-w-none px-0 pb-24 md:px-4 md:pb-6 lg:max-w-(--breakpoint-5xl) md:pt-0">
           {/* Spacer – maintains the margin where breadcrumbs originally lived */}
-          <div className="h-1" aria-hidden="true" />
           <ProductProvider>
 
 
-            {/* ── MOBILE: compact stacked layout ── */}
+                        {/* ── MOBILE: compact stacked layout ── */}
             <div className="lg:hidden">
-              {/* Image */}
-
-
-              <div className="bg-white px-2 pt-0.5 pb-0">
+              {/* Image - no padding, touches edges */}
+              <div className="bg-white">
                 <Suspense
                   fallback={
-                    <div className="relative w-full aspect-[4/3] max-h-[48vw] overflow-hidden rounded-xl bg-neutral-100" />
+                    <div className="relative w-full aspect-[4/3] max-h-[48vw] overflow-hidden bg-neutral-100" />
                   }
                 >
                                     <Gallery
@@ -486,25 +487,39 @@ export default async function ProductPage(props: {
 
 
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div className="hidden lg:grid gap-4 mt-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)_minmax(260px,0.72fr)] items-start">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            {/* ── DESKTOP: 3-column grid ── */}
+            <div className="hidden lg:grid gap-4 mt-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)_minmax(260px,0.72fr)] items-start">
 
 
-                                                                                                              <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
-                                                                                                                <div className="p-3 md:p-4">
-                                                                                                                  <Suspense
-                                                                                                                    fallback={
-                                                                                                                      <div className="relative aspect-square h-full max-h-[400px] w-full overflow-hidden rounded-xl bg-neutral-100" />
-                                                                                                                    }
-                                                                                                                  >
-                                                                                                                    <Gallery
-                                                                                                                      images={(product.images || []).slice(0, 5).map((image: Image) => ({
-                                                                                                                        src: image.url,
-                                                                                                                        altText: image.altText,
-                                                                                                                      }))}
-                                                                                                                    />
-                                                                                                                  </Suspense>
-                                                                                                                </div>
-                                                                                                              </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            {/* Image - no card wrapper, touches edges */}
+              <div className="overflow-hidden">
+                <Suspense
+                  fallback={
+                    <div className="relative aspect-square h-full max-h-[400px] w-full overflow-hidden bg-neutral-100" />
+                  }
+                >
+                  <Gallery
+                    images={(product.images || []).slice(0, 5).map((image: Image) => ({
+                      src: image.url,
+                      altText: image.altText,
+                    }))}
+                  />
+                </Suspense>
+              </div>
 
                                                                                                               {/* Second column: breadcrumbs appear above the title via ProductDescription */}
 
