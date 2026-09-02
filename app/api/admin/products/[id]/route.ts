@@ -109,9 +109,18 @@ export async function PUT(
 ) {
   try {
     const db = await connectDB();
-    const { id } = await params;
+        const { id } = await params;
     const body = await req.json();
-        if (body.slug || body.name) body.slug = slugify(body.slug || body.name);
+    const existing = await db.collection("products").findOne({ _id: new ObjectId(id) });
+    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    // Preserve the original product URL. Only change the slug when the user
+    // explicitly edits it; title changes and variant edits must not alter the URL.
+    if (body.slug && String(body.slug).trim()) {
+      body.slug = slugify(String(body.slug).trim());
+    } else {
+      body.slug = existing.slug;
+    }
     if (body.name) {
       const detectedBrand = await detectBrand(body.name);
       if (detectedBrand) body.brand = detectedBrand;

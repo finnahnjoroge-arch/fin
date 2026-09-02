@@ -206,7 +206,7 @@ export default async function ProductPage(props: {
 
                             {/* Title + Price + Variants + Actions all in one block */}
               {/* Breadcrumbs (Home > Category) appear above the title via ProductDescription */}
-              <div className="mx-3 mt-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <div className="bg-white px-3 pt-1.5 pb-3 border-t border-neutral-100">
                 <Suspense fallback={null}>
                   <ProductDescription product={product} compact breadcrumbs={breadcrumbItems} />
                 </Suspense>
