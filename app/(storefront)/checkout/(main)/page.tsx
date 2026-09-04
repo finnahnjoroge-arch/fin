@@ -297,7 +297,7 @@ export default function CheckoutPage() {
               <Input
                 value={form.fullName}
                 onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))}
-                placeholder="John Doe"
+                placeholder="Full names"
               />
               {errors.fullName && <p className="text-xs text-red-500">{errors.fullName}</p>}
             </div>
@@ -308,7 +308,7 @@ export default function CheckoutPage() {
                   id="phoneInput"
                   value={form.phone}
                   onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-                  placeholder="0712345678"
+                  placeholder="Phone number"
                 />
                 {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
               </div>
@@ -316,7 +316,7 @@ export default function CheckoutPage() {
                 <Input
                   value={form.city}
                   onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
-                  placeholder="Nairobi"
+                  placeholder="City/Town"
                 />
                 {errors.city && <p className="text-xs text-red-500">{errors.city}</p>}
               </div>
@@ -327,7 +327,7 @@ export default function CheckoutPage() {
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                placeholder="john@example.com"
+                placeholder="Email address (Optional)"
               />
             </div>
 
@@ -337,7 +337,7 @@ export default function CheckoutPage() {
                 rows={2}
                 value={form.address}
                 onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
-                placeholder="123 Main St"
+                placeholder="Address (Optional)"
               />
               {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
             </div>
@@ -474,7 +474,7 @@ export default function CheckoutPage() {
                   rows={3}
                   value={form.notes}
                   onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-                  placeholder="Leave at the gate"
+                  placeholder="Special notes about your order ?"
                 />
               </div>
             )}
