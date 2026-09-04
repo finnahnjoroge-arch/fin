@@ -9,7 +9,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { useCart } from "components/cart/cart-context";
 import Price from "components/price";
-import { PageSpinner } from "components/spinner";
 import { ChevronDown, Pencil } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -98,7 +97,11 @@ export default function CheckoutPage() {
   }, []);
 
   if (cart === undefined) {
-    return <PageSpinner text="Loading checkout…" />;
+    return (
+      <div className="py-12 text-center">
+        <p className="text-lg text-neutral-500">Loading checkout…</p>
+      </div>
+    );
   }
 
   if (cart.lines.length === 0) {
@@ -283,12 +286,13 @@ export default function CheckoutPage() {
 
         {/* Delivery Information Card */}
         <div className="rounded-lg border border-neutral-200 bg-white shadow-md overflow-hidden flex flex-col">
-          {/* Mobile: Delivery info header */}
+          {/* Mobile: Checkout header */}
           <div className="bg-neutral-50/80 px-4 py-3 border-b border-neutral-200 md:hidden">
-            <h2 className="text-base font-semibold text-neutral-900">Delivery info</h2>
+            <h2 className="text-base font-semibold text-neutral-900">Checkout</h2>
           </div>
 
           <div className="space-y-4 p-4 flex-1">
+            <p className="text-sm font-medium text-neutral-700 md:hidden">Delivery info</p>
             <div className="space-y-2">
               <Input
                 value={form.fullName}
