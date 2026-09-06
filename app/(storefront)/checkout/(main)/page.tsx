@@ -337,12 +337,18 @@ export default function CheckoutPage() {
             </div>
 
             <div className="space-y-2">
-              <Input
+              <textarea
                 autoComplete="street-address"
+                rows={1}
                 value={form.address}
-                onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
+                onChange={(e) => {
+                  setForm((p) => ({ ...p, address: e.target.value }));
+                  e.target.style.height = "auto";
+                  e.target.style.height = e.target.scrollHeight + "px";
+                }}
                 placeholder="Street address, apartment, suite..."
-                className="h-16"
+                className="flex w-full rounded-md border border-neutral-200 bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-neutral-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 overflow-hidden resize-none"
+                style={{ minHeight: "40px", fontFamily: "inherit", fontSize: "inherit", lineHeight: "1.5" }}
               />
               {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
             </div>
@@ -454,31 +460,6 @@ export default function CheckoutPage() {
                 <CollapsibleContent>{orderSummaryBody}</CollapsibleContent>
               </Collapsible>
             </div>
-
-            <div className="flex items-center gap-2 pt-1">
-              <input
-                id="addNote"
-                type="checkbox"
-                className="h-4 w-4 rounded border-neutral-300 text-black focus:ring-black"
-                checked={showNotes}
-                onChange={(e) => setShowNotes(e.target.checked)}
-              />
-              <label htmlFor="addNote" className="text-sm text-neutral-500 cursor-pointer">
-                Add order notes (optional)
-              </label>
-            </div>
-
-            {showNotes && (
-              <div className="space-y-2">
-                <textarea
-                  className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
-                  rows={3}
-                  value={form.notes}
-                  onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-                  placeholder="Special notes about your order ?"
-                />
-              </div>
-            )}
 
             <Button className="w-full" type="submit" disabled={submitting}>
               {submitting ? "Placing Order..." : "Place Order"}
