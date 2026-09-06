@@ -168,9 +168,26 @@ export function ProductActions({
         </div>
       </div>
 
-      {/* Mobile sticky bar */}
+            {/* Mobile sticky bar */}
       {(phone || storePhoneClean) && (
         <div className="fixed inset-x-0 bottom-0 z-50 flex translate-y-0 items-center gap-2 border-t border-neutral-200 bg-white/95 px-3 py-2 shadow-[0_-8px_24px_rgba(0,0,0,0.12)] backdrop-blur supports-[padding:max(0px)]:pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden">
+                    {/* Call Button - Small icon with glow effect */}
+          {storePhoneClean && (
+            <a
+              href={telLink}
+              className="group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-black text-white shadow-lg"
+              aria-label="Call to order"
+            >
+              {/* Pulse animation */}
+              <span className="absolute inset-0 rounded-full bg-black animate-ping opacity-20"></span>
+              <span className="absolute -inset-1 rounded-full bg-neutral-600 opacity-0 group-hover:opacity-30 transition-opacity"></span>
+              {/* Glow ring */}
+              <span className="absolute inset-0 rounded-full shadow-[0_0_12px_rgba(0,0,0,0.6)]"></span>
+              <svg className="relative h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+            </a>
+          )}
           <div className="min-w-0 flex-1 basis-0">{renderAddToCart("p-3 text-sm")}</div>
           {phone && (
             <div className="min-w-0 flex-1 basis-0">
@@ -190,8 +207,8 @@ export function ProductActions({
         </div>
       )}
 
-      {/* Mobile: only Add to Cart if no WhatsApp */}
-      {!phone && (
+            {/* Mobile: only Add to Cart if no WhatsApp and no store phone */}
+      {!phone && !storePhoneClean && (
         <div className="md:hidden">{renderAddToCart()}</div>
       )}
     </>

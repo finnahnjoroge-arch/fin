@@ -7,8 +7,9 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
-import ContactDropdown from "./contact-dropdown";
 import MenuDrawer from "./menu-drawer";
+import MobileSearch from "./mobile-search";
+import ProfileDropdown from "./profile-dropdown";
 import Search, { SearchSkeleton } from "./search";
 
 const CartModal = dynamic(() => import("components/cart/modal"), { ssr: false });
@@ -36,16 +37,19 @@ export function Navbar({
       {/* Main navbar */}
       <div className={clsx("px-3 pb-2 pt-2 lg:px-6 lg:pb-3 lg:pt-3", dark ? "border-neutral-700" : "border-neutral-200")}>
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 md:gap-4">
-          {/* Left: Hamburger Menu + Logo */}
-          <div className="flex items-center gap-1.5 md:gap-4">
+          {/* Left: Hamburger Menu + Mobile Search + Logo (centered on mobile) */}
+          <div className="flex flex-1 items-center gap-1.5 md:gap-4 md:flex-none">
             {/* Hamburger Drawer Menu */}
             <MenuDrawer categories={categories} pages={pages} navbarDark={dark} />
 
-            {/* Logo */}
+            {/* Mobile Search - expands to search bar when clicked */}
+            <MobileSearch navbarDark={dark} />
+
+            {/* Logo - centered on mobile, left on desktop */}
             <Link
               href="/"
               prefetch={true}
-              className="flex flex-shrink-0 items-center gap-1.5 md:gap-2"
+              className="flex flex-1 flex-shrink-0 items-center justify-center gap-1.5 md:flex-none md:justify-start md:gap-2"
             >
               {settings.logoUrl ? (
                 <img
@@ -66,7 +70,7 @@ export function Navbar({
             </Link>
           </div>
 
-          {/* Center: Search Bar */}
+          {/* Center: Search Bar - desktop only */}
           {!isCheckout && (
             <div className="hidden flex-1 max-w-md md:block">
               <Suspense fallback={<SearchSkeleton />}>
@@ -75,24 +79,15 @@ export function Navbar({
             </div>
           )}
 
-          {/* Right: Contact Dropdown + Cart */}
+                    {/* Right: Profile Dropdown + Cart */}
           <div className="flex items-center gap-1.5 md:gap-4">
-            {/* Contact Dropdown */}
-            <ContactDropdown storePhone={settings.storePhone} whatsappPhone={settings.whatsappPhone} navbarDark={dark} />
+            {/* Profile Dropdown */}
+            <ProfileDropdown navbarDark={dark} />
 
             {/* Cart Icon */}
             <CartModal navbarDark={dark} />
           </div>
         </div>
-
-        {/* Mobile search */}
-        {!isProductPage && !isCheckout && (
-                    <div className="block md:hidden pb-2">
-            <Suspense fallback={<SearchSkeleton />}>
-              <Search />
-            </Suspense>
-          </div>
-        )}
       </div>
     </nav>
   );

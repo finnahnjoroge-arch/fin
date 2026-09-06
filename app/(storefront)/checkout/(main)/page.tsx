@@ -7,6 +7,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "components/cart/cart-context";
 import Price from "components/price";
 import { ChevronDown, Pencil } from "lucide-react";
@@ -194,8 +195,14 @@ export default function CheckoutPage() {
 
       if (!res.ok) throw new Error(data.error || "Failed to place order");
 
-      localStorage.removeItem("cart");
+            localStorage.removeItem("cart");
       window.dispatchEvent(new Event("cart-updated"));
+
+      // Save customer data for account page
+      localStorage.setItem("customerEmail", form.email || `${form.phone}@placeholder.local`);
+      localStorage.setItem("customerPhone", form.phone);
+      localStorage.setItem("customerName", form.fullName);
+
       // Pass both the order id and (for M-Pesa) the CheckoutRequestID so the
       // success page can begin live-polling the payment result.
       const cid = data.checkoutRequestId
@@ -337,18 +344,12 @@ export default function CheckoutPage() {
             </div>
 
             <div className="space-y-2">
-              <textarea
+              <Textarea
                 autoComplete="street-address"
-                rows={1}
                 value={form.address}
-                onChange={(e) => {
-                  setForm((p) => ({ ...p, address: e.target.value }));
-                  e.target.style.height = "auto";
-                  e.target.style.height = e.target.scrollHeight + "px";
-                }}
+                onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
                 placeholder="Street address, apartment, suite..."
-                className="flex w-full rounded-md border border-neutral-200 bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-neutral-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 overflow-hidden resize-none"
-                style={{ minHeight: "40px", fontFamily: "inherit", fontSize: "inherit", lineHeight: "1.5" }}
+                className="min-h-10 bg-neutral-50"
               />
               {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
             </div>
