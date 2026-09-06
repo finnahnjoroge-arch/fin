@@ -7,6 +7,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useCart } from "components/cart/cart-context";
 import Price from "components/price";
 import { ChevronDown, Pencil } from "lucide-react";
@@ -295,6 +296,7 @@ export default function CheckoutPage() {
             <p className="text-sm font-medium text-neutral-700 md:hidden">Delivery info</p>
             <div className="space-y-2">
               <Input
+                autoComplete="name"
                 value={form.fullName}
                 onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))}
                 placeholder="Full names"
@@ -306,6 +308,7 @@ export default function CheckoutPage() {
               <div className="space-y-2">
                 <Input
                   id="phoneInput"
+                  autoComplete="tel"
                   value={form.phone}
                   onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
                   placeholder="Phone number"
@@ -314,6 +317,7 @@ export default function CheckoutPage() {
               </div>
               <div className="space-y-2">
                 <Input
+                  autoComplete="address-level2"
                   value={form.city}
                   onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
                   placeholder="City/Town"
@@ -325,6 +329,7 @@ export default function CheckoutPage() {
             <div className="space-y-2">
               <Input
                 type="email"
+                autoComplete="email"
                 value={form.email}
                 onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
                 placeholder="Email address (Optional)"
@@ -335,9 +340,10 @@ export default function CheckoutPage() {
               <textarea
                 className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm placeholder:text-neutral-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 dark:border-neutral-800 dark:bg-neutral-950 dark:placeholder:text-neutral-400 dark:focus-visible:ring-neutral-300"
                 rows={2}
+                autoComplete="street-address"
                 value={form.address}
                 onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
-                placeholder="Address (Optional)"
+                placeholder="Street address, apartment, suite..."
               />
               {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
             </div>
