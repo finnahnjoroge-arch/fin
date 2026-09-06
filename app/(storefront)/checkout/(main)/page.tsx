@@ -337,13 +337,12 @@ export default function CheckoutPage() {
             </div>
 
             <div className="space-y-2">
-              <textarea
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                rows={2}
+              <Input
                 autoComplete="street-address"
                 value={form.address}
                 onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
                 placeholder="Street address, apartment, suite..."
+                className="h-16"
               />
               {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
             </div>
@@ -416,7 +415,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Mobile order summary - immediately above place order button */}
-            <div className="md:hidden -mx-4 border-y border-neutral-200">
+            <div className="md:hidden border border-neutral-200 rounded-lg overflow-hidden">
               <Collapsible open={summaryOpen} onOpenChange={setSummaryOpen}>
                 <CollapsibleTrigger className="group flex w-full items-center gap-3 bg-neutral-100/60 px-4 py-3 text-left transition-colors hover:bg-neutral-100 data-[state=open]:bg-white">
                   {firstImage && !summaryOpen && (
@@ -456,10 +455,6 @@ export default function CheckoutPage() {
               </Collapsible>
             </div>
 
-            <Button className="w-full" type="submit" disabled={submitting}>
-              {submitting ? "Placing Order..." : "Place Order"}
-            </Button>
-
             <div className="flex items-center gap-2 pt-1">
               <input
                 id="addNote"
@@ -484,6 +479,10 @@ export default function CheckoutPage() {
                 />
               </div>
             )}
+
+            <Button className="w-full" type="submit" disabled={submitting}>
+              {submitting ? "Placing Order..." : "Place Order"}
+            </Button>
           </div>
         </div>
       </form>
