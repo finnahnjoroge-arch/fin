@@ -7,7 +7,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useCart } from "components/cart/cart-context";
 import Price from "components/price";
 import { ChevronDown, Pencil } from "lucide-react";
@@ -330,6 +329,7 @@ export default function CheckoutPage() {
               <Input
                 type="email"
                 autoComplete="email"
+                name="email"
                 value={form.email}
                 onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
                 placeholder="Email address (Optional)"
@@ -338,7 +338,7 @@ export default function CheckoutPage() {
 
             <div className="space-y-2">
               <textarea
-                className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm placeholder:text-neutral-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 dark:border-neutral-800 dark:bg-neutral-950 dark:placeholder:text-neutral-400 dark:focus-visible:ring-neutral-300"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 rows={2}
                 autoComplete="street-address"
                 value={form.address}
