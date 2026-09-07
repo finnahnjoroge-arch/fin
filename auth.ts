@@ -27,7 +27,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
         const db = await connectDB();
         const email = (credentials.email as string).trim().toLowerCase();
-        const user = await db.collection("users").findOne({ email });
+        const user = await db.collection("adminusers").findOne({ email });
         if (!user) return null;
         const isValid = await bcrypt.compare(
           credentials.password as string,
