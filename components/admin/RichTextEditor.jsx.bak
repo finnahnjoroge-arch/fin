@@ -1,0 +1,446 @@
+"use client";
+
+import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
+import Placeholder from "@tiptap/extension-placeholder";
+import TextAlign from "@tiptap/extension-text-align";
+import Underline from "@tiptap/extension-underline";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  Bold,
+  Heading1,
+  Heading2,
+  Heading3,
+  Image as ImageIcon,
+  Italic,
+  Link as LinkIcon,
+  Link as LinkUrlIcon,
+  List,
+  ListOrdered,
+  Quote,
+  Redo,
+  Strikethrough,
+  Underline as UnderlineIcon,
+  Undo,
+  Upload,
+  X,
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+const RichTextEditor = ({ value, onChange, placeholder = "Write something...", rows = 12 }) => {
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Underline,
+      Link.configure({
+        openOnClick: false,
+      }),
+      Image.configure({
+        allowBase64: true,
+      }),
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+      }),
+      Placeholder.configure({
+        placeholder,
+      }),
+    ],
+    content: value,
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+  });
+
+  // Sync external value changes (e.g., on load/reset)
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value);
+    }
+  }, [editor, value]);
+
+  // Handle link clicks in editor - prevent navigation and allow editing
+  const handleEditorClick = useCallback((event) => {
+    const target = event.target;
+    
+    // Check if clicked element is a link or inside a link
+    const linkElement = target.closest('a[href]');
+    
+    if (linkElement && editor) {
+      // Prevent the default link behavior (opening the URL)
+      event.preventDefault();
+      event.stopPropagation();
+      
+      // Focus the editor first
+      editor.commands.focus();
+      
+      // Select the link to allow editing
+      const href = linkElement.getAttribute('href');
+      
+      // Create a transaction to select the link
+      editor
+        .chain()
+        .setTextSelection({
+          from: editor.state.doc.resolve(editor.view.posAtDOM(linkElement, 0)).pos,
+          to: editor.state.doc.resolve(editor.view.posAtDOM(linkElement, linkElement.childNodes.length)).pos,
+        })
+        .run();
+      
+      // Prompt to edit or unlink
+      const action = window.prompt(
+        `Link URL: ${href}\n\nEnter new URL to update, or leave empty to unlink:`,
+        href
+      );
+      
+      if (action === null) {
+        // User cancelled - do nothing
+        return;
+      } else if (action === '') {
+        // Empty string - unlink
+        editor.chain().focus().unsetLink().run();
+      } else if (action !== href) {
+        // New URL - update link
+        editor.chain().focus().setLink({ href: action }).run();
+      }
+    }
+  }, [editor]);
+
+  // Handle image file upload
+  const handleImageUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      
+      const response = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || "Upload failed");
+      }
+      
+      // Insert the uploaded image into the editor
+      editor.chain().focus().setImage({ src: data.url }).run();
+      
+      // Close modal and reset
+      setImageModalOpen(false);
+      setImageUrl("");
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  // Insert image from URL
+  const insertImageFromUrl = () => {
+    if (!imageUrl.trim()) return;
+    
+    editor.chain().focus().setImage({ src: imageUrl.trim() }).run();
+    setImageModalOpen(false);
+    setImageUrl("");
+  };
+
+  if (!editor) {
+    return null;
+  }
+
+  const ToolbarButton = ({ onClick, isActive, icon: Icon, title }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
+        isActive
+          ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-white"
+          : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
+      }`}
+    >
+      <Icon className="h-4 w-4" />
+    </button>
+  );
+
+  const Divider = () => (
+    <div className="mx-1 h-6 w-px self-center bg-neutral-200 dark:bg-neutral-700" />
+  );
+
+  const toggleLink = () => {
+    if (editor.isActive("link")) {
+      // If already a link, ask if user wants to edit or unlink
+      const currentHref = editor.getAttributes("link").href;
+      const action = window.prompt(
+        `Current link: ${currentHref}\n\nEnter new URL to update, or leave empty to unlink:`,
+        currentHref
+      );
+      
+      if (action === null) {
+        // User cancelled
+        return;
+      } else if (action === '') {
+        // Empty string - unlink
+        editor.chain().focus().unsetLink().run();
+      } else {
+        // New URL - update link
+        editor.chain().focus().setLink({ href: action }).run();
+      }
+    } else {
+      // No link selected - add new link
+      const url = window.prompt("Enter URL");
+      if (url) {
+        editor.chain().focus().setLink({ href: url }).run();
+      }
+    }
+  };
+
+  return (
+    <div className="overflow-hidden rounded-md border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-1 border-b border-neutral-200 bg-neutral-50 px-2 py-2 dark:border-neutral-700 dark:bg-neutral-800">
+        {/* Text formatting */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          isActive={editor.isActive("bold")}
+          icon={Bold}
+          title="Bold"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          isActive={editor.isActive("italic")}
+          icon={Italic}
+          title="Italic"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          isActive={editor.isActive("underline")}
+          icon={UnderlineIcon}
+          title="Underline"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          isActive={editor.isActive("strike")}
+          icon={Strikethrough}
+          title="Strikethrough"
+        />
+
+        <Divider />
+
+        {/* Headings */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          isActive={editor.isActive("heading", { level: 1 })}
+          icon={Heading1}
+          title="Heading 1"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          isActive={editor.isActive("heading", { level: 2 })}
+          icon={Heading2}
+          title="Heading 2"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          isActive={editor.isActive("heading", { level: 3 })}
+          icon={Heading3}
+          title="Heading 3"
+        />
+
+        <Divider />
+
+        {/* Lists */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          isActive={editor.isActive("bulletList")}
+          icon={List}
+          title="Bullet List"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          isActive={editor.isActive("orderedList")}
+          icon={ListOrdered}
+          title="Ordered List"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          isActive={editor.isActive("blockquote")}
+          icon={Quote}
+          title="Blockquote"
+        />
+
+        <Divider />
+
+        {/* Alignment */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("left").run()}
+          isActive={editor.isActive({ textAlign: "left" })}
+          icon={AlignLeft}
+          title="Align Left"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("center").run()}
+          isActive={editor.isActive({ textAlign: "center" })}
+          icon={AlignCenter}
+          title="Align Center"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("right").run()}
+          isActive={editor.isActive({ textAlign: "right" })}
+          icon={AlignRight}
+          title="Align Right"
+        />
+
+        <Divider />
+
+        {/* Link and Image */}
+        <ToolbarButton
+          onClick={toggleLink}
+          isActive={editor.isActive("link")}
+          icon={LinkIcon}
+          title={editor.isActive("link") ? "Edit/Unlink" : "Add Link"}
+        />
+        <ToolbarButton
+          onClick={() => setImageModalOpen(true)}
+          isActive={false}
+          icon={ImageIcon}
+          title="Add Image"
+        />
+
+        <Divider />
+
+        {/* Undo/Redo */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().undo().run()}
+          isActive={false}
+          icon={Undo}
+          title="Undo"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().redo().run()}
+          isActive={false}
+          icon={Redo}
+          title="Redo"
+        />
+      </div>
+
+      {/* Editor Content */}
+      <div className="relative" onClick={handleEditorClick}>
+        <EditorContent
+          editor={editor}
+          className="prose prose-sm max-w-none px-3 py-2 dark:prose-invert focus:outline-none [&_a]:cursor-text"
+          style={{ minHeight: `${rows * 1.5}rem` }}
+        />
+      </div>
+
+      {/* Hidden file input for image upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageUpload}
+      />
+
+      {/* Image Insert Modal */}
+      {imageModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-lg border border-neutral-200 bg-white p-4 shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                Insert Image
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setImageModalOpen(false);
+                  setImageUrl("");
+                }}
+                className="rounded p-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Upload from device */}
+              <div className="rounded-lg border border-dashed border-neutral-300 p-4 dark:border-neutral-600">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="flex w-full flex-col items-center justify-center gap-2 text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                >
+                  <Upload className="h-8 w-8" />
+                  <span className="text-sm font-medium">
+                    {uploading ? "Uploading..." : "Click to upload from device"}
+                  </span>
+                  <span className="text-xs text-neutral-400">
+                    Supports JPG, PNG, GIF, WebP
+                  </span>
+                </button>
+              </div>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-neutral-200 dark:border-neutral-700" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+                    Or paste URL
+                  </span>
+                </div>
+              </div>
+
+              {/* URL input */}
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <LinkUrlIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                  <input
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                    className="h-10 w-full rounded-md border border-neutral-200 bg-white pl-10 pr-3 text-sm text-neutral-900 placeholder:text-neutral-500 outline-none focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder:text-neutral-400"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        insertImageFromUrl();
+                      }
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={insertImageFromUrl}
+                  disabled={!imageUrl.trim()}
+                  className="h-10 rounded-md bg-neutral-900 px-4 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
+                >
+                  Insert
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default RichTextEditor;

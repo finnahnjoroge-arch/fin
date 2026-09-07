@@ -1,5 +1,6 @@
 "use client";
 
+import { WishlistProvider } from "components/wishlist/wishlist-context";
 import { ThemeProvider } from "next-themes";
 import { ReactNode } from "react";
 
@@ -19,7 +20,9 @@ export function Providers({
       forcedTheme={forcedTheme}
       enableSystem={false}
     >
-      {children}
+      <WishlistProvider>
+        {children}
+      </WishlistProvider>
     </ThemeProvider>
   );
 }

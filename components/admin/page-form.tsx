@@ -1,6 +1,6 @@
 "use client";
 
-import RichTextEditor from "@/components/admin/rich-text-editor";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

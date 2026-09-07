@@ -11,6 +11,7 @@ import MenuDrawer from "./menu-drawer";
 import MobileSearch from "./mobile-search";
 import ProfileDropdown from "./profile-dropdown";
 import Search, { SearchSkeleton } from "./search";
+import WishlistNav from "./wishlist-nav";
 
 const CartModal = dynamic(() => import("components/cart/modal"), { ssr: false });
 
@@ -79,14 +80,17 @@ export function Navbar({
             </div>
           )}
 
-                    {/* Right: Profile Dropdown + Cart */}
-          <div className="flex items-center gap-1.5 md:gap-4">
-            {/* Profile Dropdown */}
-            <ProfileDropdown navbarDark={dark} />
+                    {/* Right: Wishlist + Profile + Cart */}
+                    <div className="flex items-center gap-1.5 md:gap-4">
+                      {/* Wishlist */}
+                      <WishlistNav navbarDark={dark} />
 
-            {/* Cart Icon */}
-            <CartModal navbarDark={dark} />
-          </div>
+                      {/* Profile Dropdown */}
+                      <ProfileDropdown navbarDark={dark} />
+
+                      {/* Cart Icon */}
+                      <CartModal navbarDark={dark} />
+                    </div>
         </div>
       </div>
     </nav>

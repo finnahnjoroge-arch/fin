@@ -1,5 +1,6 @@
 import { Breadcrumbs } from "components/breadcrumbs";
 import Prose from "components/prose";
+import { WishlistButton } from "components/wishlist/wishlist-button";
 import { Product } from "lib/sfcc/types";
 import { ProductPrice } from "./product-price";
 import { VariantSelector } from "./variant-selector";
@@ -22,10 +23,15 @@ export function ProductDescription({
           </div>
         ) : null}
 
-        <h1 className={compact ? "mb-1.5 text-lg font-semibold leading-snug text-neutral-950" : "mb-2 text-2xl font-semibold leading-tight text-neutral-950 md:text-3xl"}>
+                <h1 className={compact ? "mb-1.5 text-lg font-semibold leading-snug text-neutral-950" : "mb-2 text-2xl font-semibold leading-tight text-neutral-950 md:text-3xl"}>
           {product.title}
         </h1>
-        <ProductPrice product={product} />
+        <div className="flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <ProductPrice product={product} />
+          </div>
+          <WishlistButton handle={product.handle} size={compact ? "sm" : "md"} />
+        </div>
       </div>
       <VariantSelector
         options={product.options}
@@ -33,7 +39,7 @@ export function ProductDescription({
         images={product.images}
         defaultVariant={product.defaultVariant}
       />
-      {product.productHighlights && !compact ? (
+            {product.productHighlights ? (
         <div className="mt-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
           <h3 className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-neutral-500">
             Key Features

@@ -86,3 +86,148 @@ button:not([disabled]) {
     z-index: 40;
   }
 }
+
+/* Tiptap Editor Styles */
+@layer components {
+  /* Editor container */
+  .tiptap {
+    @apply outline-none;
+  }
+
+  /* Placeholder styling */
+  .tiptap p.is-editor-empty:first-child::before {
+    @apply pointer-events-none float-left h-0 text-neutral-400 dark:text-neutral-500;
+    content: attr(data-placeholder);
+  }
+
+  /* Typography - Headings */
+  .tiptap h1 {
+    @apply mb-4 text-3xl font-bold text-neutral-900 dark:text-white;
+  }
+
+  .tiptap h2 {
+    @apply mb-3 text-2xl font-bold text-neutral-900 dark:text-white;
+  }
+
+  .tiptap h3 {
+    @apply mb-2 text-xl font-semibold text-neutral-900 dark:text-white;
+  }
+
+  /* Paragraphs */
+  .tiptap p {
+    @apply mb-3 leading-relaxed text-neutral-800 dark:text-neutral-200;
+  }
+
+  /* Lists */
+  .tiptap ul {
+    @apply mb-3 list-disc pl-6 text-neutral-800 dark:text-neutral-200;
+  }
+
+  .tiptap ol {
+    @apply mb-3 list-decimal pl-6 text-neutral-800 dark:text-neutral-200;
+  }
+
+  .tiptap li {
+    @apply mb-1;
+  }
+
+  /* Blockquotes */
+  .tiptap blockquote {
+    @apply mb-3 border-l-4 border-neutral-300 pl-4 italic text-neutral-600 dark:border-neutral-600 dark:text-neutral-400;
+  }
+
+    /* Links */
+  .tiptap a {
+    @apply text-blue-600 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300;
+  }
+
+  /* Links in Tiptap editor - make them editable, not clickable */
+  .ProseMirror a {
+    cursor: text;
+    pointer-events: auto;
+  }
+
+  /* Visual indicator for links in editor on hover */
+  .ProseMirror a:hover {
+    @apply rounded bg-blue-100 dark:bg-blue-900/30;
+  }
+
+  /* Images */
+  .tiptap img {
+    @apply my-4 h-auto max-w-full rounded-md;
+  }
+
+  /* Text alignment */
+  .tiptap .text-left {
+    @apply text-left;
+  }
+
+  .tiptap .text-center {
+    @apply text-center;
+  }
+
+  .tiptap .text-right {
+    @apply text-right;
+  }
+
+  /* Bold, Italic, Underline, Strike */
+  .tiptap strong {
+    @apply font-bold text-neutral-900 dark:text-white;
+  }
+
+  .tiptap em {
+    @apply italic;
+  }
+
+  .tiptap u {
+    @apply underline;
+  }
+
+  .tiptap s {
+    @apply line-through;
+  }
+
+  /* Selection styling */
+  .tiptap ::selection {
+    @apply bg-blue-200 dark:bg-blue-900;
+  }
+
+  /* Focus outline for the editor */
+  .tiptap:focus {
+    @apply outline-none;
+  }
+
+  /* Editor content wrapper focus state */
+  .ProseMirror-focused {
+    @apply outline-none;
+  }
+
+  /* Ensure proper dark mode for prose content */
+  .dark .tiptap h1,
+  .dark .tiptap h2,
+  .dark .tiptap h3,
+  .dark .tiptap h4,
+  .dark .tiptap h5,
+  .dark .tiptap h6 {
+    @apply text-white;
+  }
+
+  .dark .tiptap p,
+  .dark .tiptap ul,
+  .dark .tiptap ol,
+  .dark .tiptap li {
+    @apply text-neutral-200;
+  }
+
+  .dark .tiptap strong {
+    @apply text-white;
+  }
+
+  /* Nested lists */
+  .tiptap ul ul,
+  .tiptap ol ol,
+  .tiptap ul ol,
+  .tiptap ol ul {
+    @apply mt-1;
+  }
+}
