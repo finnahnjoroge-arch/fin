@@ -36,7 +36,6 @@ export default function Search() {
 
   useEffect(() => {
     const trimmedQuery = query.trim();
-
     if (trimmedQuery.length < 2) {
       setResults([]);
       setLoading(false);
@@ -52,14 +51,10 @@ export default function Search() {
         });
         const data = await res.json();
         setResults(Array.isArray(data.products) ? data.products : []);
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          setResults([]);
-        }
+      } catch {
+        if (!controller.signal.aborted) setResults([]);
       } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
+        if (!controller.signal.aborted) setLoading(false);
       }
     }, 250);
 
@@ -73,7 +68,7 @@ export default function Search() {
     <Form
       action="/search"
       prefetch={false}
-      className="w-max-[550px] relative w-full lg:w-80 xl:w-full"
+      className="relative w-full"
       onFocus={() => setOpen(true)}
       onBlur={() => window.setTimeout(() => setOpen(false), 150)}
     >
@@ -81,39 +76,41 @@ export default function Search() {
         <input
           type="text"
           name="q"
-          placeholder="Search products, categories..."
+          placeholder="Search products..."
           autoComplete="off"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
             setOpen(true);
           }}
-          className="w-full rounded-full border border-neutral-300 bg-neutral-100 px-3 py-2 pr-10 text-sm text-neutral-900 placeholder:text-neutral-500 transition-all focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 md:px-4 md:py-2.5 md:pr-12"
-                  />
-                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full bg-blue-600 p-1.5 md:p-2">
-                    <MagnifyingGlassIcon className="h-4 w-4 text-white" />
+          className="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 pr-9 text-sm text-neutral-100 placeholder:text-neutral-500 transition-all focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+        />
+        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-md bg-red-600 p-1 hover:bg-red-500 transition-colors">
+          <MagnifyingGlassIcon className="h-3.5 w-3.5 text-white" />
         </div>
       </div>
+
+      {/* Dropdown results */}
       {open && query.trim().length >= 2 ? (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xl">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-neutral-700 bg-neutral-900 shadow-2xl">
           {loading ? (
             <div className="px-4 py-3 text-sm text-neutral-500">Searching...</div>
           ) : results.length ? (
             <>
-              <div className="max-h-80 overflow-y-auto">
+              <div className="max-h-72 overflow-y-auto">
                 {results.map((product) => (
                   <Link
                     key={product.handle}
                     href={`/product/${product.handle}`}
-                    className="flex items-center gap-3 border-b border-neutral-100 px-3 py-2 last:border-b-0 hover:bg-neutral-100"
-                    onMouseDown={(event) => {
-                      event.preventDefault();
+                    className="flex items-center gap-3 border-b border-neutral-800 px-3 py-2.5 last:border-b-0 hover:bg-neutral-800 transition-colors"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
                       setOpen(false);
                       router.push(`/product/${product.handle}`);
                     }}
                     onClick={() => setOpen(false)}
                   >
-                    <div className="h-12 w-12 flex-none overflow-hidden rounded-md bg-neutral-100">
+                    <div className="h-10 w-10 flex-none overflow-hidden rounded-lg bg-neutral-800 ring-1 ring-neutral-700">
                       {product.featuredImage?.url ? (
                         <img
                           src={product.featuredImage.url}
@@ -123,11 +120,11 @@ export default function Search() {
                       ) : null}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 text-sm font-medium leading-snug text-black">
+                      <p className="line-clamp-1 text-sm font-medium text-neutral-100">
                         {product.title}
                       </p>
                       {product.priceRange?.minVariantPrice?.amount ? (
-                        <p className="mt-1 text-xs text-neutral-500">
+                        <p className="mt-0.5 text-xs text-neutral-500">
                           {product.priceRange.minVariantPrice.currencyCode || "KES"}{" "}
                           {Number(product.priceRange.minVariantPrice.amount).toLocaleString()}
                         </p>
@@ -138,10 +135,10 @@ export default function Search() {
               </div>
               <Link
                 href={`/search?q=${encodeURIComponent(query.trim())}`}
-                className="block border-t border-neutral-100 px-4 py-2 text-center text-sm font-medium hover:bg-neutral-100"
+                className="block border-t border-neutral-800 px-4 py-2.5 text-center text-xs font-semibold text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
                 onClick={() => setOpen(false)}
               >
-                View all results
+                View all results →
               </Link>
             </>
           ) : (
@@ -155,17 +152,16 @@ export default function Search() {
 
 export function SearchSkeleton() {
   return (
-    <form className="w-max-[550px] relative w-full lg:w-80 xl:w-full">
+    <form className="relative w-full">
       <div className="relative flex items-center">
         <input
-                    placeholder="Search products, categories..."
-          className="w-full rounded-full border border-neutral-300 bg-neutral-100 px-3 py-2 pr-10 text-sm text-neutral-900 placeholder:text-neutral-500 md:px-4 md:py-2.5 md:pr-12"
+          placeholder="Search products..."
+          className="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 pr-9 text-sm text-neutral-100 placeholder:text-neutral-500"
         />
-        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full bg-blue-600 p-1.5 md:p-2">
-          <MagnifyingGlassIcon className="h-4 w-4 text-white" />
+        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-md bg-red-600 p-1">
+          <MagnifyingGlassIcon className="h-3.5 w-3.5 text-white" />
         </div>
       </div>
     </form>
   );
 }
-

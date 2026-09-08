@@ -731,13 +731,13 @@ async function RelatedProducts({
       <div className="-mx-5 -mt-5 mb-4 border-b border-neutral-200 bg-neutral-50/70 px-5 py-3 md:-mx-8 md:-mt-8 md:mb-6 md:px-8 md:py-4">
         <h2 className="text-lg font-bold text-neutral-900 md:text-2xl">Related Products</h2>
       </div>
-      <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {items.map((product: any) => (
-          <li key={product.handle} className="aspect-square">
+          <li key={product.handle}>
             <Link
-              className="relative block h-full w-full"
               href={`/product/${product.handle}`}
               prefetch={true}
+              className="block"
             >
               <GridTileImage
                 alt={product.title}
@@ -747,6 +747,7 @@ async function RelatedProducts({
                   amountMax: product.priceRange.maxVariantPrice.amount,
                   currencyCode: product.currencyCode,
                 }}
+                comparePrice={product.comparePrice?.amount}
                 src={product.featuredImage?.url}
                 fill
                 sizes="(min-width: 1024px) 25vw, 50vw"

@@ -29,7 +29,7 @@ export function Gallery({
     "flex h-full items-center justify-center px-5 text-neutral-700 transition-all ease-in-out hover:scale-110 hover:text-black md:px-6";
 
             return (
-            <form className="grid grid-cols-1 gap-0 rounded-2xl bg-white p-3 lg:grid-cols-[72px_1fr] lg:gap-3">
+            <form className="grid grid-cols-1 gap-0 bg-white lg:rounded-2xl lg:p-3 lg:grid-cols-[72px_1fr] lg:gap-3">
               {/* Desktop: Thumbnails column on the left */}
               {safeImages.length > 1 && (
                 <div className="hidden lg:flex lg:flex-col lg:gap-2 lg:overflow-y-auto lg:max-h-[520px]">
@@ -63,7 +63,7 @@ export function Gallery({
               )}
 
               {/* Main Image Column */}
-              <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-neutral-50">
+              <div className="relative aspect-square w-full overflow-hidden bg-neutral-50 lg:rounded-xl">
         {safeImages[safeImageIndex] && (
           <Image
             className="h-full w-full object-cover"
