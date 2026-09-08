@@ -96,8 +96,8 @@ export function CategoriesSidebar({ categories }: { categories: Category[] }) {
   }, [query, filtered, expanded]);
 
   return (
-    <div className="hidden lg:block h-full">
-      <div className="flex flex-col overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm h-full">
+    <div className="hidden lg:block h-full min-h-0">
+      <div className="flex flex-col overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm max-h-full">
         {/* Header */}
         <div className="shrink-0 border-b border-neutral-200 bg-neutral-50 px-4 py-3">
           <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-700">
