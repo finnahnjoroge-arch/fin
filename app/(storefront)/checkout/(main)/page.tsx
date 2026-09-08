@@ -27,6 +27,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<"cash_on_delivery" | "mpesa">(
     "cash_on_delivery"
   );
+  const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState<string>("standard");
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -44,6 +45,7 @@ export default function CheckoutPage() {
     freeShippingThreshold: 5000,
     shippingNote: "",
     currency: "KES",
+    deliveryMethods: [] as { id: string; name: string; description: string; price: number; enabled: boolean }[],
     paymentMethods: [
       {
         id: "cash_on_delivery",
@@ -81,13 +83,19 @@ export default function CheckoutPage() {
                   enabled: true,
                 },
               ];
+          const deliveryMethods = Array.isArray(data.deliveryMethods) && data.deliveryMethods.length > 0
+            ? data.deliveryMethods
+            : [{ id: "standard", name: "Standard Delivery", description: "2-3 business days", price: data.shippingCost ?? 200, enabled: true }];
           setSettings({
             shippingCost: data.shippingCost ?? 200,
             freeShippingThreshold: data.freeShippingThreshold ?? 5000,
             shippingNote: data.shippingNote || "",
             currency: data.currency || "KES",
+            deliveryMethods,
             paymentMethods,
           });
+          const enabledDelivery = deliveryMethods.filter((m: any) => m.enabled);
+          if (enabledDelivery.length > 0) setSelectedDeliveryMethod(enabledDelivery[0].id);
           const enabled = paymentMethods.filter((m: any) => m.enabled);
           if (enabled.length > 0) {
             setPaymentMethod(enabled[0].id);
@@ -114,7 +122,8 @@ export default function CheckoutPage() {
   }
 
   const subtotal = Number(cart.cost.subtotalAmount.amount);
-  const shippingCost = subtotal >= settings.freeShippingThreshold ? 0 : settings.shippingCost;
+  const activeDelivery = settings.deliveryMethods.find((m) => m.id === selectedDeliveryMethod);
+  const shippingCost = activeDelivery ? activeDelivery.price : (subtotal >= settings.freeShippingThreshold ? 0 : settings.shippingCost);
   const total = subtotal + shippingCost;
 
   const validate = () => {
@@ -185,6 +194,8 @@ export default function CheckoutPage() {
           // Send the chosen payment method so the order-creation route knows
           // whether to trigger the M-Pesa STK push.
           paymentMethod,
+          deliveryMethod: selectedDeliveryMethod,
+          deliveryMethodName: activeDelivery?.name || "",
           subtotal,
           shippingCost,
           total,
@@ -295,11 +306,10 @@ export default function CheckoutPage() {
         <div className="rounded-lg border border-neutral-200 bg-white shadow-md overflow-hidden flex flex-col">
           {/* Mobile: Checkout header */}
           <div className="bg-neutral-50/80 px-4 py-3 border-b border-neutral-200 md:hidden">
-            <h2 className="text-base font-semibold text-neutral-900">Checkout</h2>
+            <h2 className="text-base font-semibold text-neutral-900">Delivery Info</h2>
           </div>
 
           <div className="space-y-4 p-4 flex-1">
-            <p className="text-sm font-medium text-neutral-700 md:hidden">Delivery info</p>
             <div className="space-y-2">
               <Input
                 autoComplete="name"
@@ -357,6 +367,46 @@ export default function CheckoutPage() {
           </div>
 
           <div className="border-t border-neutral-200 p-4 space-y-4">
+            {/* Delivery method selection */}
+            {settings.deliveryMethods.filter((m) => m.enabled).length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-neutral-700">Delivery method</p>
+                <div className="space-y-2">
+                  {settings.deliveryMethods.filter((m) => m.enabled).map((method) => {
+                    const isSelected = selectedDeliveryMethod === method.id;
+                    return (
+                      <label
+                        key={method.id}
+                        className={`block rounded-md border px-3 py-2.5 cursor-pointer transition-colors ${
+                          isSelected ? "border-neutral-900 bg-neutral-100" : "border-neutral-200 bg-white hover:border-neutral-300"
+                        }`}
+                      >
+                        <span className="flex items-center justify-between">
+                          <span className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="deliveryMethod"
+                              value={method.id}
+                              checked={isSelected}
+                              onChange={() => setSelectedDeliveryMethod(method.id)}
+                              className="h-4 w-4 text-neutral-900"
+                            />
+                            <span className="text-sm font-medium">{method.name}</span>
+                          </span>
+                          <span className="text-sm font-semibold text-neutral-900">
+                            {method.price === 0 ? <span className="text-green-600">Free</span> : `KES ${method.price.toLocaleString()}`}
+                          </span>
+                        </span>
+                        {method.description && (
+                          <span className="mt-1 block pl-6 text-xs text-neutral-500">{method.description}</span>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Payment method selection */}
             <div className="space-y-2">
               <p className="text-sm font-medium text-neutral-700">Payment method</p>

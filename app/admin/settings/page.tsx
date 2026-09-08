@@ -45,6 +45,7 @@ type SettingsData = {
   shippingCost: number;
   freeShippingThreshold: number;
   shippingNote: string;
+  deliveryMethods: { id: string; name: string; description: string; price: number; enabled: boolean }[];
   deliveryRegions: string;
   logoUrl: string;
   logoIconUrl: string;
@@ -85,6 +86,11 @@ const defaultSettings: SettingsData = {
   shippingCost: 200,
   freeShippingThreshold: 5000,
   shippingNote: "",
+  deliveryMethods: [
+    { id: "standard", name: "Standard Delivery", description: "2-3 business days", price: 200, enabled: true },
+    { id: "express", name: "Express Delivery", description: "Same day / next day", price: 500, enabled: true },
+    { id: "pickup", name: "Pick Up", description: "Collect from our location", price: 0, enabled: true },
+  ],
   deliveryRegions: "",
   logoUrl: "",
   logoIconUrl: "",
@@ -509,13 +515,97 @@ export default function SettingsPage() {
               placeholder="Delivery within 2-3 business days"
             />
           </div>
-          <div className="space-y-2">
-            <Label>Supported delivery regions (comma-separated)</Label>
-            <Input
-              value={settings.deliveryRegions}
-              onChange={(e) => updateField("deliveryRegions", e.target.value)}
-              placeholder="Nairobi, Mombasa, Kisumu"
-            />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Delivery Methods</Label>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = [...(settings.deliveryMethods || []), { id: Date.now().toString(), name: "", description: "", price: 0, enabled: true }];
+                  updateField("deliveryMethods", next);
+                }}
+                className="rounded-md bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800"
+              >
+                + Add Method
+              </button>
+            </div>
+            {(settings.deliveryMethods || []).map((method, index) => (
+              <div key={method.id} className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-neutral-600 uppercase tracking-wide">Method {index + 1}</span>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-1.5 text-xs text-neutral-600 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={method.enabled}
+                        onChange={(e) => {
+                          const next = [...settings.deliveryMethods];
+                          next[index] = { ...next[index], enabled: e.target.checked };
+                          updateField("deliveryMethods", next);
+                        }}
+                        className="rounded"
+                      />
+                      Enabled
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = settings.deliveryMethods.filter((_, i) => i !== index);
+                        updateField("deliveryMethods", next);
+                      }}
+                      className="text-xs text-red-500 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+                <div className="grid gap-2 grid-cols-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Name</Label>
+                    <Input
+                      value={method.name}
+                      onChange={(e) => {
+                        const next = [...settings.deliveryMethods];
+                        next[index] = { ...next[index], name: e.target.value };
+                        updateField("deliveryMethods", next);
+                      }}
+                      placeholder="e.g. Standard Delivery"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Price (KES)</Label>
+                    <Input
+                      type="number"
+                      value={method.price}
+                      onChange={(e) => {
+                        const next = [...settings.deliveryMethods];
+                        next[index] = { ...next[index], price: Number(e.target.value) };
+                        updateField("deliveryMethods", next);
+                      }}
+                      placeholder="0"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Description (shown at checkout)</Label>
+                  <Input
+                    value={method.description}
+                    onChange={(e) => {
+                      const next = [...settings.deliveryMethods];
+                      next[index] = { ...next[index], description: e.target.value };
+                      updateField("deliveryMethods", next);
+                    }}
+                    placeholder="e.g. 2-3 business days"
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+            ))}
+            {(!settings.deliveryMethods || settings.deliveryMethods.length === 0) && (
+              <p className="text-sm text-neutral-400 text-center py-4">No delivery methods yet. Add one above.</p>
+            )}
           </div>
         </div>
       )}

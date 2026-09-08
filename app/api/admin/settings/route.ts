@@ -19,6 +19,11 @@ const defaultSettings = {
   freeShippingThreshold: 5000,
   shippingNote: "",
   deliveryRegions: [],
+  deliveryMethods: [
+    { id: "standard", name: "Standard Delivery", description: "2-3 business days", price: 200, enabled: true },
+    { id: "express", name: "Express Delivery", description: "Same day / next day", price: 500, enabled: true },
+    { id: "pickup", name: "Pick Up", description: "Collect from our location", price: 0, enabled: true },
+  ],
   logoUrl: "",
   logoIconUrl: "",
   faviconUrl: "",

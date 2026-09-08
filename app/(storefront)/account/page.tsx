@@ -61,8 +61,8 @@ export default function AccountPage() {
   const [customer, setCustomer] = useState<CustomerData | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lookupEmail, setLookupEmail] = useState("");
-  const [lookupPhone, setLookupPhone] = useState("");
+  const [lookupInput, setLookupInput] = useState("");
+  const [lookupMode, setLookupMode] = useState<"email" | "phone">("phone");
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
 
@@ -105,12 +105,14 @@ export default function AccountPage() {
 
   const handleLookup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!lookupEmail && !lookupPhone) {
-      setSearchError("Please enter your email or phone number");
+    if (!lookupInput.trim()) {
+      setSearchError("Please enter your " + (lookupMode === "email" ? "email address" : "phone number"));
       return;
     }
     setIsSearching(true);
-    await fetchCustomerData(lookupEmail, lookupPhone);
+    const email = lookupMode === "email" ? lookupInput.trim() : "";
+    const phone = lookupMode === "phone" ? lookupInput.trim() : "";
+    await fetchCustomerData(email, phone);
     setIsSearching(false);
   };
 
@@ -165,26 +167,50 @@ export default function AccountPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLookup} className="space-y-4">
+              {/* Toggle tabs */}
+              <div className="flex rounded-lg border border-neutral-200 bg-neutral-50 p-1">
+                <button
+                  type="button"
+                  onClick={() => { setLookupMode("phone"); setLookupInput(""); setSearchError(""); }}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-all ${
+                    lookupMode === "phone"
+                      ? "bg-white text-neutral-900 shadow-sm"
+                      : "text-neutral-500 hover:text-neutral-700"
+                  }`}
+                >
+                  <Phone className="h-4 w-4" />
+                  Phone
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setLookupMode("email"); setLookupInput(""); setSearchError(""); }}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-all ${
+                    lookupMode === "email"
+                      ? "bg-white text-neutral-900 shadow-sm"
+                      : "text-neutral-500 hover:text-neutral-700"
+                  }`}
+                >
+                  <Mail className="h-4 w-4" />
+                  Email
+                </button>
+              </div>
+
+              {/* Single input */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="lookup-input">
+                  {lookupMode === "phone" ? "Phone Number" : "Email Address"}
+                </Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={lookupEmail}
-                  onChange={(e) => setLookupEmail(e.target.value)}
+                  id="lookup-input"
+                  key={lookupMode}
+                  type={lookupMode === "email" ? "email" : "tel"}
+                  placeholder={lookupMode === "phone" ? "e.g. 0712345678" : "Enter your email"}
+                  value={lookupInput}
+                  autoFocus
+                  onChange={(e) => { setLookupInput(e.target.value); setSearchError(""); }}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="e.g. 0712345678"
-                  value={lookupPhone}
-                  onChange={(e) => setLookupPhone(e.target.value)}
-                />
-              </div>
+
               {searchError && (
                 <p className="text-sm text-red-600">{searchError}</p>
               )}
