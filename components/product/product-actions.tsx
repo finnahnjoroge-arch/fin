@@ -1,6 +1,7 @@
 "use client";
 
 import { BanknotesIcon, MapPinIcon, ShoppingCartIcon, TruckIcon } from "@heroicons/react/24/outline";
+import { baseUrl } from "lib/utils";
 import clsx from "clsx";
 import { useCart } from "components/cart/cart-context";
 import { useProduct } from "components/product/product-context";

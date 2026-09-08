@@ -1,4 +1,5 @@
 import { connectDB } from "@/lib/mongodb";
+import { baseUrl } from "@/lib/utils";
 
 export interface FeedProduct {
   id: string;
