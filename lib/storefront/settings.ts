@@ -31,19 +31,38 @@ function getFacebookPixelId(code: string): string | null {
   return code.match(/fbq\('init',\s*'([^']+)'\)/)?.[1] ?? null;
 }
 
+function getGoogleSiteVerification(code: string): string | null {
+  if (!code.includes("google-site-verification")) return null;
+
+  return (
+    code.match(/google-site-verification["']?\s*content=["']([^"']+)["']/)?.[1] ??
+    null
+  );
+}
+
 function normalizeScripts(scripts: ScriptSnippet[]): ScriptSnippet[] {
   return scripts
     .map((script) => ({
       ...script,
       code: disableFacebookAutoConfig(script.code),
     }))
-    .filter((script) => !getFacebookPixelId(script.code));
+    .filter((script) => !getFacebookPixelId(script.code))
+    .filter((script) => !getGoogleSiteVerification(script.code));
 }
 
 function getFacebookPixelIdFromScripts(scripts: ScriptSnippet[]): string {
   for (const script of scripts) {
     const pixelId = getFacebookPixelId(script.code);
     if (pixelId) return pixelId;
+  }
+
+  return "";
+}
+
+function getGoogleSiteVerificationFromScripts(scripts: ScriptSnippet[]): string {
+  for (const script of scripts) {
+    const code = getGoogleSiteVerification(script.code);
+    if (code) return code;
   }
 
   return "";
@@ -85,6 +104,7 @@ const defaultSettings = {
   heroButtonLink: "",
   heroBgColor: "#f5f5dc",
   facebookPixelId: "",
+  googleSiteVerification: "",
   scripts: [] as ScriptSnippet[],
   navbarDark: false,
 };
@@ -228,10 +248,16 @@ async function getStoreSettingsFromDB(): Promise<typeof defaultSettings> {
     settings.facebookPixelId =
       settings.facebookPixelId ||
       getFacebookPixelIdFromScripts(migratedScripts);
+    settings.googleSiteVerification =
+      settings.googleSiteVerification ||
+      getGoogleSiteVerificationFromScripts(migratedScripts);
     settings.scripts = migratedScripts;
   } else {
     settings.facebookPixelId =
       settings.facebookPixelId || getFacebookPixelIdFromScripts(raw.scripts);
+    settings.googleSiteVerification =
+      settings.googleSiteVerification ||
+      getGoogleSiteVerificationFromScripts(raw.scripts);
     settings.scripts = normalizeScripts(
       raw.scripts.filter(
         (s: any) =>
@@ -246,7 +272,7 @@ async function getStoreSettingsFromDB(): Promise<typeof defaultSettings> {
     );
   }
 
-        return settings;
+  return settings;
 }
 
 const CACHE_REVALIDATE_SECONDS = 3600;

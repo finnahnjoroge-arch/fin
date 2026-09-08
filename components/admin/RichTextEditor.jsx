@@ -324,10 +324,11 @@ const RichTextEditor = ({ value, onChange, placeholder = "Write something...", r
     const onMouseDown = (e) => {
       if (!editorWrapperRef.current?.contains(e.target)) {
         if (editor.state.selection.node) {
-          editor.chain().setTextSelection(Math.max(1, Math.min(editor.state.selection.from, editor.state.doc.content.size))).blur().run();
-        } else {
-          editor.commands.blur();
+          editor.chain().setTextSelection(
+            Math.max(1, Math.min(editor.state.selection.from, editor.state.doc.content.size))
+          ).run();
         }
+        // Don't call blur() — it steals focus from other inputs on the page
       }
     };
     document.addEventListener("mousedown", onMouseDown);

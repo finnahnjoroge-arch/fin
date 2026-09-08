@@ -52,9 +52,6 @@ export async function generateMetadata() {
       alternates: {
         canonical: baseUrl,
       },
-      verification: settings.googleSiteVerification
-        ? { google: settings.googleSiteVerification }
-        : undefined,
       openGraph: {
         type: "website",
         siteName: title,
