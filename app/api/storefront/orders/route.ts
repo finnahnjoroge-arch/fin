@@ -1,3 +1,4 @@
+import { baseUrl } from "lib/utils";
 import { connectDB } from "@/lib/mongodb";
 import { initiateStkPush } from "@/lib/mpesa";
 import { MpesaTransaction } from "@/models/MpesaTransaction";
@@ -246,7 +247,7 @@ export async function POST(req: NextRequest) {
           total: orderData.total,
           phone: phone || "",
           address: `${address}, ${city}, ${country}`, notes: notes || "",
-          productUrl: body.items?.[0]?.productId ? `https://finnorah.co.ke/product/${body.items[0].handle || ""}` : "",
+          productUrl: body.items?.[0]?.productId ? `${baseUrl}/product/${body.items[0].handle || ""}` : "",
         }),
       });
       const emailData = await emailRes.json();

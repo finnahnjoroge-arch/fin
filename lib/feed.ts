@@ -75,7 +75,7 @@ export async function getFeedProducts(): Promise<FeedProduct[]> {
     const parentId = doc._id.toString();
     const baseTitle = doc.name || "";
     const description = (doc.description || "").replace(/<[^>]*>/g, "").trim();
-    const baseLink = `https://finnorah.co.ke/product/${doc.slug}`;
+    const baseLink = `${baseUrl}/product/${doc.slug}`;
     const baseImage = doc.images?.[0] || "";
     const basePrice = doc.price || 0;
     const baseCompare = doc.comparePrice || undefined;
@@ -226,7 +226,7 @@ export function formatGoogleXml(products: FeedProduct[]): string {
 <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
   <channel>
     <title>Finnorah</title>
-    <link>https://finnorah.co.ke</link>
+    <link>${baseUrl}</link>
     <description>Product feed for Google Merchant Center</description>
     ${items}
   </channel>
@@ -260,7 +260,7 @@ export function formatFacebookXml(products: FeedProduct[]): string {
 <rss version="2.0">
   <channel>
     <title>Finnorah</title>
-    <link>https://finnorah.co.ke</link>
+    <link>${baseUrl}</link>
     <description>Product feed for Facebook Catalog</description>
     ${items}
   </channel>

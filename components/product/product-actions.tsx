@@ -55,7 +55,7 @@ export function ProductActions({
   const search = params.toString();
   const productUrl = typeof window !== "undefined"
     ? `${window.location.origin}/product/${product.handle}${search ? `?${search}` : ""}`
-    : `https://finnorah.co.ke/product/${product.handle}`;
+    : `${baseUrl}/product/${product.handle}`;
 
   const variantName = finalVariant?.title || finalVariant?.selectedOptions?.map((o) => o.value).join(" / ") || "";
   const price = finalVariant?.price?.amount
