@@ -25,11 +25,11 @@ const Label = ({
   return (
     <div
       className={clsx(
-        "flex w-full flex-col bg-[#f7f7f7] px-3 pb-0 pt-2 sm:px-4 sm:pt-3",
+        "flex w-full flex-col bg-white px-2 pb-2 pt-2 sm:px-3 sm:pt-2",
       )}
     >
       {/* Product name - clearly visible */}
-      <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-neutral-800 sm:text-base">
+      <h3 className="line-clamp-2 text-xs font-medium leading-snug text-neutral-700 sm:text-sm">
         {title}
       </h3>
             {/* Price row */}
@@ -44,7 +44,7 @@ const Label = ({
           </span>
         )}
         <Price
-          className="text-base font-bold text-blue-600 sm:text-lg"
+          className="text-base font-bold text-neutral-900 sm:text-lg"
           amount={amountMin}
           prefix={isRangePrice ? "From " : ""}
           currencyCode={currencyCode}

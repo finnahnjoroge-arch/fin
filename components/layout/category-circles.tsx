@@ -22,12 +22,12 @@ function CategoryArtwork({ category }: { category: Category }) {
         width={200}
         height={200}
         loading="lazy"
-        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        className="h-full w-full object-cover"
       />
     );
   }
   return (
-    <span className="inline-flex h-full w-full items-center justify-center text-3xl sm:text-4xl md:text-5xl">
+    <span className="inline-flex h-full w-full items-center justify-center text-4xl sm:text-5xl">
       <CategoryIcon value={category.emoji} fallback={"\u{1F4E6}"} iconClassName="text-current" />
     </span>
   );
@@ -37,15 +37,21 @@ function CategoryTile({ category }: { category: Category }) {
   return (
     <Link
       href={`/category/${category.slug}`}
-      className="group flex shrink-0 snap-start flex-col items-center gap-2 px-2 text-center md:min-w-[168px] lg:min-w-[174px]"
-      style={{ minWidth: "25%" }}
+      className="group flex shrink-0 snap-start flex-col items-center gap-3 px-1 text-center"
+      style={{ minWidth: "clamp(120px, 20vw, 160px)" }}
     >
       {/* Circle */}
-      <div className="relative h-[96px] w-[96px] overflow-hidden rounded-full bg-white shadow-md ring-2 ring-white transition-all duration-300 group-hover:shadow-lg group-hover:ring-4 group-hover:ring-blue-200 sm:h-[108px] sm:w-[108px] md:h-[160px] md:w-[160px] lg:h-[172px] lg:w-[172px]">
+      <div
+        className="relative overflow-hidden rounded-full bg-white border border-neutral-200 shadow-sm transition-opacity duration-200 group-hover:opacity-90"
+        style={{ width: "clamp(110px, 18vw, 150px)", height: "clamp(110px, 18vw, 150px)" }}
+      >
         <CategoryArtwork category={category} />
       </div>
       {/* Label */}
-      <span className="line-clamp-2 text-center text-[11px] font-bold leading-tight text-neutral-800 group-hover:text-blue-600 sm:text-xs md:text-[14px] lg:text-[15px]">
+      <span
+        className="line-clamp-2 text-center font-semibold leading-snug text-neutral-800 group-hover:text-neutral-600"
+        style={{ fontSize: "clamp(11px, 2.8vw, 14px)" }}
+      >
         {category.title}
       </span>
     </Link>
@@ -85,30 +91,24 @@ export function CategoryCircles({ categories }: { categories: Category[] }) {
   if (!visibleCategories.length) return null;
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#DDF3FF] pb-6 pt-0 md:pb-8 md:pt-1">
-      {/* White wave at bottom */}
-      <div
-        className="absolute inset-x-[-18%] bottom-0 h-[56%] rounded-t-[55%] bg-[#FAFAFA] md:inset-x-[-10%] md:h-[52%]"
-        aria-hidden="true"
-      />
-
-      <div className="relative mx-auto max-w-7xl px-1.5 md:px-3 lg:px-4">
-        <div className="relative flex items-center overflow-visible">
+    <section className="relative w-full bg-[#F5F5F5] py-4 md:py-5 border-y border-neutral-200">
+      <div className="relative mx-auto max-w-7xl">
+        <div className="relative flex items-center">
           {/* Left button */}
           <button
             onClick={() => scroll("left")}
             disabled={!canScrollLeft}
-            className="absolute left-0 top-[3.4rem] z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-neutral-700 shadow-md ring-1 ring-black/5 transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-40 md:top-[6.2rem] lg:flex"
-            aria-label="Scroll categories left"
+            className="absolute left-0 top-1/2 z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white text-neutral-500 shadow ring-1 ring-black/10 transition hover:text-neutral-800 disabled:cursor-not-allowed disabled:opacity-20 lg:flex"
+            aria-label="Scroll left"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4" />
           </button>
 
           {/* Scroll track */}
           <div
             ref={scrollContainerRef}
             onScroll={checkScroll}
-            className="scrollbar-hide flex w-full gap-0 overflow-x-auto overflow-y-visible px-0 pb-0 pt-1 sm:gap-1 md:gap-2 md:px-1 md:pt-2 lg:px-10"
+            className="scrollbar-hide flex w-full items-start gap-0 overflow-x-auto px-1 py-2 md:px-2 lg:px-8"
             style={{ scrollBehavior: "smooth", scrollSnapType: "x mandatory" }}
           >
             {visibleCategories.map((category) => (
@@ -120,10 +120,10 @@ export function CategoryCircles({ categories }: { categories: Category[] }) {
           <button
             onClick={() => scroll("right")}
             disabled={!canScrollRight}
-            className="absolute right-0 top-[3.4rem] z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-neutral-700 shadow-md ring-1 ring-black/5 transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-40 md:top-[6.2rem] lg:flex"
-            aria-label="Scroll categories right"
+            className="absolute right-0 top-1/2 z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white text-neutral-500 shadow ring-1 ring-black/10 transition hover:text-neutral-800 disabled:cursor-not-allowed disabled:opacity-20 lg:flex"
+            aria-label="Scroll right"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>

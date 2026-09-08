@@ -62,14 +62,14 @@ export default function CategorySections({ categories, initialData }: CategorySe
   };
 
   return (
-    <div className="w-full py-4 md:py-8" style={{ backgroundColor: "#E1F3FF" }}>
+    <div className="w-full py-4 md:py-8" style={{ backgroundColor: "#F5F5F5" }}>
       <div className="mx-auto max-w-7xl space-y-6 px-3 md:space-y-10 md:px-4 lg:px-6">
         {categories.map((cat, sectionIndex) => {
           const catData = data[cat.slug];
           if (!catData || catData.products.length === 0) return null;
 
           return (
-            <section key={cat.slug} className="overflow-hidden rounded-xl bg-[#FAFAFA] shadow-sm ring-1 ring-neutral-200">
+            <section key={cat.slug} className="overflow-hidden rounded-md bg-white shadow-sm border border-neutral-200">
               <div className={`flex items-center justify-between gap-3 px-3 py-2 text-white md:gap-4 md:px-5 md:py-2.5 ${headerThemes[sectionIndex % headerThemes.length]}`}>
                 <div className="flex min-w-0 items-center gap-1.5 md:gap-3">
                   {cat.emoji ? (

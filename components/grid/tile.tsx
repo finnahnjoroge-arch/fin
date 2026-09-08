@@ -29,10 +29,10 @@ export function GridTileImage({
   return (
     <div
       className={clsx(
-        "group flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-xl transition-all duration-300 ease-out",
+        "group flex h-full w-full flex-col overflow-hidden rounded-md bg-white border border-neutral-200 transition-shadow duration-200",
         {
           "ring-2 ring-blue-500": active,
-          "shadow-md hover:-translate-y-1": !active,
+          "hover:shadow-sm": !active,
         },
       )}
     >
